@@ -4,7 +4,7 @@
 - 💞️ I’m looking to collaborate on insurtech ideas to revolutionize loss prevention, more equitable risk transfer and smart contract driven indemnification experience
 - 📫 How to reach me john@pangollc.com
 - 💼 [LinkedIn](https://www.linkedin.com/in/jcchevalier/)
-- 🌐 [Visit Our Website](https://www.pangollc.com)
+- 🌐 [Visit Our Website](http://www.pangollc.com)
 
 <!---
 chevytlc/chevytlc is a ✨ special ✨ repository because its `README.md` (this file) appears on your GitHub profile.
