@@ -1,0 +1,202 @@
+# BEACON Rule Artifact: CAT-001
+# CAT Exposure Scoring and Referral Thresholds
+# Schema refs: _state/refactor/schema/field-index.yaml
+
+requirement_id: UWR-CAT-001
+title: CAT Exposure Scoring and Referral Thresholds
+version: 1.0.0
+status: Draft
+
+source:
+  type: carrier_da
+  document: LRMGA Binding Authority Agreement
+  section: Catastrophe Exposure Guidelines
+  effective_date: 2025-01-01
+  expiration_date: null
+  verbatim: "[TODO: Extract verbatim from DA - CAT exposure requirements]"
+
+beacon_alignment:
+  layer: Control
+  enforcement_tier: Gated Referral
+  override_authority: Chief Underwriting Officer
+  failure_prevented: >
+    Binding CAT-exposed risks without adequate modeling; accumulating
+    unpriced catastrophe exposure in portfolio
+
+domain: pricing
+
+rule:
+  statement: >
+    Risks with elevated catastrophe exposure scores (earthquake, flood,
+    wildfire) require referral when scores exceed carrier thresholds.
+    Scores are enrichment-sourced (Nearmap P2). When combined with
+    high TIV, risks above both thresholds are hard-declined.
+  logic: |
+    eq_score = RESOLVE(Building.earthquake_risk_score)  # P2 Nearmap
+    flood_score = RESOLVE(Building.flood_risk_score)    # P2 Nearmap
+    tiv = RESOLVE(Building.tiv)                          # P1 Submission
+
+    # Hard decline: high CAT score + high TIV
+    IF (eq_score > CARRIER_PARAM.eq_hard_decline_score
+        OR flood_score > CARRIER_PARAM.flood_hard_decline_score)
+       AND tiv > CARRIER_PARAM.cat_tiv_threshold
+    THEN decline = TRUE
+         decline_reason = "High CAT exposure with TIV above threshold"
+
+    # Referral: elevated CAT score
+    ELSE IF eq_score > CARRIER_PARAM.eq_referral_score
+    THEN referral = TRUE
+         referral_reason = "Earthquake risk score {eq_score} exceeds referral threshold"
+
+    ELSE IF flood_score > CARRIER_PARAM.flood_referral_score
+    THEN referral = TRUE
+         referral_reason = "Flood risk score {flood_score} exceeds referral threshold"
+
+    # Advisory: moderate CAT exposure
+    ELSE IF eq_score > CARRIER_PARAM.eq_advisory_score
+            OR flood_score > CARRIER_PARAM.flood_advisory_score
+    THEN flag = ADVISORY
+         flag_reason = "Elevated CAT exposure - review pricing adequacy"
+  scope:
+    lifecycle_phase: Risk Assessment
+    peril: [Earthquake, Flood, Wildfire]
+    geography: All (excl AK, HI per ELIG-001)
+    occupancy: All
+    construction: All
+    limit_range: All
+  parameters:
+    - name: CARRIER_PARAM.eq_hard_decline_score
+      type: DOUBLE_PRECISION
+      description: Earthquake score triggering hard decline (with TIV threshold)
+      current_value: "[TODO: Populate from DA]"
+      source: Binding Authority Agreement
+    - name: CARRIER_PARAM.eq_referral_score
+      type: DOUBLE_PRECISION
+      description: Earthquake score triggering referral
+      current_value: "[TODO: Populate from DA]"
+      source: Binding Authority Agreement
+    - name: CARRIER_PARAM.eq_advisory_score
+      type: DOUBLE_PRECISION
+      description: Earthquake score triggering advisory
+      current_value: "[TODO: Populate from DA]"
+      source: Binding Authority Agreement
+    - name: CARRIER_PARAM.flood_hard_decline_score
+      type: DOUBLE_PRECISION
+      description: Flood score triggering hard decline (with TIV threshold)
+      current_value: "[TODO: Populate from DA]"
+      source: Binding Authority Agreement
+    - name: CARRIER_PARAM.flood_referral_score
+      type: DOUBLE_PRECISION
+      description: Flood score triggering referral
+      current_value: "[TODO: Populate from DA]"
+      source: Binding Authority Agreement
+    - name: CARRIER_PARAM.flood_advisory_score
+      type: DOUBLE_PRECISION
+      description: Flood score triggering advisory
+      current_value: "[TODO: Populate from DA]"
+      source: Binding Authority Agreement
+    - name: CARRIER_PARAM.cat_tiv_threshold
+      type: DOUBLE_PRECISION
+      description: TIV threshold that compounds CAT exposure into hard decline
+      current_value: "[TODO: Populate from DA]"
+      source: Binding Authority Agreement
+
+data_requirements:
+  fields:
+    - name: Building.earthquake_risk_score
+      type: DOUBLE_PRECISION
+      source: Enrichment
+      priority: P2
+      enrichment_provider: Nearmap
+      required_at_phase: Risk Assessment
+    - name: Building.flood_risk_score
+      type: DOUBLE_PRECISION
+      source: Enrichment
+      priority: P2
+      enrichment_provider: Nearmap
+      required_at_phase: Risk Assessment
+    - name: Building.tiv
+      type: DOUBLE_PRECISION
+      source: SOV
+      priority: P1
+      enrichment_provider: null
+      required_at_phase: Submission Ingestion
+    - name: Location.state
+      type: CHARACTER_VARYING
+      source: SOV
+      priority: P1
+      enrichment_provider: null
+      required_at_phase: Submission Ingestion
+    - name: Location.zip_code
+      type: CHARACTER_VARYING
+      source: SOV
+      priority: P1
+      enrichment_provider: null
+      required_at_phase: Submission Ingestion
+    - name: Location.latitude
+      type: DOUBLE_PRECISION
+      source: SOV
+      priority: P1
+      enrichment_provider: null
+      required_at_phase: Submission Ingestion
+    - name: Location.longitude
+      type: DOUBLE_PRECISION
+      source: SOV
+      priority: P1
+      enrichment_provider: null
+      required_at_phase: Submission Ingestion
+
+  enrichment_dependencies:
+    - provider: Nearmap
+      data_elements: [earthquake_risk_score, flood_risk_score]
+      trigger: "Location.latitude AND Location.longitude available"
+
+implementation:
+  evaluation_point: Risk Assessment - after enrichment
+  actions:
+    - condition: "high CAT score + high TIV"
+      action: Block Transaction
+    - condition: "CAT score > referral threshold"
+      action: Route to Referral
+    - condition: "CAT score > advisory threshold"
+      action: Flag for Review
+  user_feedback: >
+    Elevated catastrophe exposure detected. EQ score: {eq_score},
+    Flood score: {flood_score}. Review CAT modeling results and
+    pricing adequacy before proceeding.
+  sequential_dependencies:
+    - UWR-ELIG-001
+    - UWR-ELIG-002
+    - UWR-LIMIT-001
+
+federato_mapping:
+  athena_rule_id: "[TODO: Assign]"
+  tables: [operations_building, operations_location]
+  fields: [earthquake_risk_score, flood_risk_score, tiv, latitude, longitude]
+  workflow_stage: Risk Assessment
+  field_mapping:
+    - artifact_field: Building.earthquake_risk_score
+      federato_field: earthquake_risk_score
+      federato_table: operations_building
+    - artifact_field: Building.flood_risk_score
+      federato_field: flood_risk_score
+      federato_table: operations_building
+    - artifact_field: Building.tiv
+      federato_field: tiv
+      federato_table: operations_building
+  notes: >
+    CAT scores are Nearmap-sourced (P2). Enrichment must complete before
+    this rule evaluates. Latitude/longitude drive enrichment API call.
+
+lifecycle:
+  owner: Chief Underwriting Officer
+  review_cadence: Quarterly
+  next_review_date: "[TODO]"
+  sunset_trigger: Carrier changes CAT exposure guidelines
+  last_reviewed: null
+  last_reviewed_by: null
+  change_history:
+    - version: 1.0.0
+      date: 2026-03-01
+      author: CTOO
+      description: Initial creation from agentic refactor Phase 1

@@ -1,0 +1,253 @@
+# BEACON Form Artifact: FORM-CP-001
+# Commercial Property Application
+# Schema refs: _state/refactor/schema/field-index.yaml
+# Backlog ref: FED-03, IaC-DICT-002, IaC-DICT-004
+
+form_id: FORM-CP-001
+title: Commercial Property Application - Intake Form
+version: 1.0.0
+status: Draft
+form_type: application
+
+source:
+  carrier: "[TODO: Carrier name from DA]"
+  document: LRMGA Binding Authority Agreement
+  section: Required Application Forms
+  effective_date: 2025-01-01
+  mandated_by: carrier  # carrier | lrmga | regulatory
+
+purpose: >
+  Captures insured and risk information at submission intake for commercial
+  property risks. Generates the initial data payload that feeds triage,
+  enrichment, and risk assessment.
+
+# Selection logic: when is this form used?
+selection_logic:
+  description: >
+    Commercial property application is selected when policy type is commercial
+    property and class of business falls within carrier appetite.
+  conditions:
+    - field: Policy.policy_type
+      operator: equals
+      value: "Commercial Property"
+    - field: Policy.class_of_business
+      operator: in
+      values: "[TODO: Populate from carrier appetite list]"
+  exclusions:
+    - field: Location.state
+      operator: in
+      values: ["AK", "HI"]
+      reason: "Per ELIG-001: Alaska and Hawaii excluded"
+
+# Fields this form captures (maps to Federato entities)
+captures:
+  # Account-level fields
+  account:
+    entity: NB_Accounts
+    fields:
+      - attribute: account_name
+        form_label: "Named Insured"
+        required: true
+        validation: "Non-empty string"
+      - attribute: fein
+        form_label: "FEIN / Tax ID"
+        required: true
+        validation: "9-digit numeric or XX-XXXXXXX format"
+      - attribute: business_description
+        form_label: "Business Description"
+        required: true
+        validation: null
+      - attribute: industry_code
+        form_label: "SIC/NAICS Code"
+        required: true
+        validation: "Valid SIC or NAICS code"
+      - attribute: main_address
+        form_label: "Mailing Address"
+        required: true
+        validation: null
+      - attribute: main_city
+        form_label: "City"
+        required: true
+        validation: null
+      - attribute: main_state
+        form_label: "State"
+        required: true
+        validation: "2-letter state code, not AK or HI"
+      - attribute: main_zip_code
+        form_label: "ZIP Code"
+        required: true
+        validation: "5-digit or 9-digit ZIP"
+      - attribute: effective_date
+        form_label: "Requested Effective Date"
+        required: true
+        validation: "Date >= today"
+      - attribute: expiration_date
+        form_label: "Requested Expiration Date"
+        required: true
+        validation: "Date > effective_date, typically +12 months"
+      - attribute: entity_type
+        form_label: "Entity Type"
+        required: true
+        validation: "Corporation, LLC, Partnership, Individual, Trust, Other"
+
+  # Location-level fields (repeating section)
+  locations:
+    entity: Location
+    repeating: true
+    min_entries: 1
+    fields:
+      - attribute: address
+        form_label: "Location Address"
+        required: true
+      - attribute: city
+        form_label: "City"
+        required: true
+      - attribute: state
+        form_label: "State"
+        required: true
+        validation: "2-letter state code, not AK or HI"
+      - attribute: zip_code
+        form_label: "ZIP Code"
+        required: true
+      - attribute: county
+        form_label: "County"
+        required: false
+      - attribute: latitude
+        form_label: null
+        required: false
+        notes: "Auto-populated from geocoding if not provided"
+      - attribute: longitude
+        form_label: null
+        required: false
+        notes: "Auto-populated from geocoding if not provided"
+
+  # Building-level fields (repeating, nested under location)
+  buildings:
+    entity: Building
+    repeating: true
+    min_entries: 1
+    parent: locations
+    fields:
+      - attribute: construction_type
+        form_label: "Construction Type"
+        required: true
+        validation: "Frame, Joisted Masonry, Non-Combustible, Masonry Non-Combustible, Modified Fire Resistive, Fire Resistive"
+      - attribute: occupancy
+        form_label: "Occupancy Code"
+        required: true
+      - attribute: occupancy_description
+        form_label: "Occupancy Description"
+        required: true
+      - attribute: year_built
+        form_label: "Year Built"
+        required: true
+        validation: "4-digit year, <= current year"
+      - attribute: number_of_stories
+        form_label: "Number of Stories"
+        required: true
+        validation: "Positive integer"
+      - attribute: square_footage
+        form_label: "Total Square Footage"
+        required: true
+        validation: "Positive number"
+      - attribute: building_limit
+        form_label: "Building Limit"
+        required: true
+        validation: "Positive number, currency"
+      - attribute: contents_limit
+        form_label: "Contents Limit"
+        required: false
+        validation: "Positive number, currency"
+      - attribute: business_income
+        form_label: "Business Income Limit"
+        required: false
+        validation: "Positive number, currency"
+      - attribute: tiv
+        form_label: "Total Insured Value"
+        required: true
+        validation: "= building_limit + contents_limit + business_income + other_value"
+        notes: "Calculated field; sum of component values"
+      - attribute: deductible
+        form_label: "All-Peril Deductible"
+        required: true
+        validation: "Per carrier minimum deductible schedule"
+      - attribute: sprinklered
+        form_label: "Sprinklered"
+        required: true
+        validation: "Yes/No/Partial"
+      - attribute: number_of_buildings
+        form_label: "Number of Buildings at Location"
+        required: true
+
+  # Policy-level fields
+  policy:
+    entity: Policy
+    fields:
+      - attribute: policy_type
+        form_label: "Policy Type"
+        required: true
+        pre_filled: "Commercial Property"
+      - attribute: class_of_business
+        form_label: "Class of Business"
+        required: true
+      - attribute: program_type
+        form_label: "Program"
+        required: true
+      - attribute: underwriting_company
+        form_label: "Carrier"
+        required: true
+        notes: "May be pre-selected based on program_type and carrier routing"
+      - attribute: commission_percentage
+        form_label: "Commission %"
+        required: true
+        validation: "Per carrier schedule"
+
+  # Broker fields
+  broker:
+    entity: Brokers
+    fields:
+      - attribute: text
+        form_label: "Broker / Agent Name"
+        required: true
+
+# Rules that fire on this form's data
+triggers_rules:
+  - UWR-ELIG-001  # Geography check (Location.state)
+  - UWR-ELIG-002  # Minimum TIV (Policy.tiv)
+  - UWR-BLDG-001  # Year built eligibility (Building.year_built)
+  - UWR-BLDG-002  # Construction type (Building.construction_type)
+  - UWR-LIMIT-001 # Limit boundaries (Building.building_limit, Policy.tiv)
+  - UWR-DATA-001  # Submission completeness (all critical fields)
+
+# Enrichment triggered after form submission
+enrichment_triggers:
+  - provider: Nearmap
+    trigger_fields: [Location.latitude, Location.longitude]
+    enriches: [Building.roof_condition_score, Building.flood_risk_score, Building.earthquake_risk_score, Building.building_condition]
+  - provider: E2Value
+    trigger_fields: [Location.address, Building.construction_type, Building.square_footage, Building.year_built]
+    enriches: [Building_Extension.total_replacement_value, Building.construction_quality, Building.facade_material]
+
+federato_mapping:
+  form_builder_id: "[TODO: From FED-03]"
+  workflow_stage: Submission Intake
+  tables_populated:
+    - operations_nb_accounts
+    - operations_location
+    - operations_building
+    - operations_policy
+    - operations_brokers
+  notes: >
+    FED-03 (commercial property form config) is 60% complete.
+    Blocked on CAR-01 (commercial terms). Expected unblock: Mar 10.
+
+lifecycle:
+  owner: Chief Underwriting Officer
+  review_cadence: On Source Renewal
+  next_review_date: "[TODO]"
+  last_reviewed: null
+  change_history:
+    - version: 1.0.0
+      date: 2026-03-01
+      author: CTOO
+      description: Initial creation from agentic refactor Phase 1

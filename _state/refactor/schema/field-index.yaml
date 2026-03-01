@@ -1,0 +1,481 @@
+# BEACON Field Index for Rule and Form Authoring
+# Extracted from: Meta Dictionary v5 / canonical-reference.json
+# Purpose: Compact agentic-ready reference. Rules and forms import field refs from here.
+# Source of truth: contracts/meta-dictionary-v5.xlsx (beacon-review repo)
+# Generated: 2026-03-01
+# Status: In-flight (172 fields mapped; meta dictionary audit ongoing)
+#
+# Usage by agents:
+#   1. UWR-XXX.yaml files reference fields as: entity.attribute (e.g., Location.state)
+#   2. FORM-XXX.yaml files reference fields the same way
+#   3. Agents resolve field metadata (type, priority, resolution) from this index
+#   4. Multi-source fields require enrichment orchestration per resolution_rule
+
+version: "5.0"
+extracted_from: "contracts/meta-dictionary-v5.xlsx"
+entity_count: 14
+field_count: 172
+
+# Source priority chain (global)
+priority_chain:
+  - rank: P1
+    source: Submission Triage
+    role: Insured-provided data from submission intake
+    authority: Wins over all other sources when value IS NOT NULL
+  - rank: P2
+    source: Nearmap
+    role: Aerial imagery / property intelligence
+    authority: Wins when Submission Triage value is NULL
+  - rank: CPSF_DEFAULT
+    source: Federato CPSF
+    role: Replacement cost calculation
+    authority: Default for building value; overridden ONLY IF E2Value > CPSF
+  - rank: Conditional
+    source: E2Value
+    role: Third-party replacement cost estimator
+    authority: Overrides CPSF for building value fields ONLY WHEN E2Value > CPSF
+  - rank: Downstream
+    source: AIR/Touchstone
+    role: Downstream catastrophe model (3rd party API within Federato)
+    authority: No override. Enrichment only.
+
+# Entities and fields relevant to underwriting rules and forms
+# Filtered to fields rules/forms actually reference (excludes downstream-only AIR fields)
+# Full schema: contracts/schemas/canonical-reference.json
+
+entities:
+
+  Location:
+    fields:
+      - attribute: state
+        type: CHARACTER_VARYING
+        priority: P1
+        multi_source: false
+        uw_relevance: [eligibility, regulatory, forms_selection]
+      - attribute: address
+        type: CHARACTER_VARYING
+        priority: P1
+        multi_source: true
+        uw_relevance: [submission_intake]
+      - attribute: city
+        type: CHARACTER_VARYING
+        priority: P1
+        multi_source: false
+        uw_relevance: [submission_intake]
+      - attribute: county
+        type: CHARACTER_VARYING
+        priority: P1
+        multi_source: false
+        uw_relevance: [regulatory, cat_exposure]
+      - attribute: country
+        type: CHARACTER_VARYING
+        priority: P1
+        multi_source: false
+        uw_relevance: [eligibility]
+      - attribute: zip_code
+        type: CHARACTER_VARYING
+        priority: P1
+        multi_source: true
+        uw_relevance: [cat_exposure, pricing, regulatory]
+      - attribute: latitude
+        type: DOUBLE_PRECISION
+        priority: P1
+        multi_source: false
+        uw_relevance: [cat_modeling, enrichment_trigger]
+      - attribute: longitude
+        type: DOUBLE_PRECISION
+        priority: P1
+        multi_source: false
+        uw_relevance: [cat_modeling, enrichment_trigger]
+      - attribute: location_number
+        type: CHARACTER_VARYING
+        priority: P1
+        multi_source: true
+        uw_relevance: [submission_intake, aggregation]
+
+  Building:
+    fields:
+      - attribute: construction_type
+        type: CHARACTER_VARYING
+        priority: P1
+        multi_source: true
+        uw_relevance: [eligibility, pricing, cat_modeling, forms_selection]
+      - attribute: occupancy
+        type: CHARACTER_VARYING
+        priority: P1
+        multi_source: false
+        uw_relevance: [eligibility, pricing, forms_selection]
+      - attribute: occupancy_description
+        type: CHARACTER_VARYING
+        priority: P1
+        multi_source: true
+        uw_relevance: [eligibility, risk_assessment]
+      - attribute: year_built
+        type: INTEGER
+        priority: P1
+        multi_source: true
+        resolution: "IF Submission_Triage.value IS NOT NULL THEN use Submission_Triage ELSE use Nearmap"
+        uw_relevance: [eligibility, pricing, risk_assessment]
+      - attribute: number_of_stories
+        type: DOUBLE_PRECISION
+        priority: P1
+        multi_source: true
+        uw_relevance: [pricing, cat_modeling]
+      - attribute: square_footage
+        type: DOUBLE_PRECISION
+        priority: P2
+        multi_source: true
+        uw_relevance: [valuation, pricing]
+      - attribute: building_limit
+        type: DOUBLE_PRECISION
+        priority: P1
+        multi_source: true
+        resolution: "IF Submission_Triage.value IS NOT NULL THEN use Submission_Triage ELSE use Nearmap"
+        uw_relevance: [limits, pricing, cat_modeling]
+      - attribute: building_value
+        type: CHARACTER_VARYING
+        priority: P1
+        multi_source: false
+        uw_relevance: [valuation, itv]
+      - attribute: contents_limit
+        type: DOUBLE_PRECISION
+        priority: P1
+        multi_source: false
+        uw_relevance: [limits, pricing]
+      - attribute: contents_value
+        type: DOUBLE_PRECISION
+        priority: P1
+        multi_source: true
+        uw_relevance: [valuation, itv]
+      - attribute: business_income
+        type: DOUBLE_PRECISION
+        priority: P1
+        multi_source: true
+        uw_relevance: [bi_coverage, limits]
+      - attribute: tiv
+        type: DOUBLE_PRECISION
+        priority: P1
+        multi_source: false
+        uw_relevance: [limits, aggregation, cat_modeling, pricing]
+      - attribute: deductible
+        type: INTEGER
+        priority: P1
+        multi_source: false
+        uw_relevance: [deductibles, pricing]
+      - attribute: sprinklered
+        type: CHARACTER_VARYING
+        priority: P1
+        multi_source: false
+        uw_relevance: [protection_class, pricing]
+      - attribute: roof_condition_score
+        type: DOUBLE_PRECISION
+        priority: P2
+        multi_source: true
+        uw_relevance: [risk_assessment, pricing, enrichment]
+      - attribute: roof_covering
+        type: CHARACTER_VARYING
+        priority: P2
+        multi_source: true
+        uw_relevance: [risk_assessment, cat_modeling]
+      - attribute: roof_material
+        type: CHARACTER_VARYING
+        priority: P2
+        multi_source: false
+        uw_relevance: [risk_assessment, cat_modeling]
+      - attribute: roof_size
+        type: DOUBLE_PRECISION
+        priority: P2
+        multi_source: true
+        uw_relevance: [valuation]
+      - attribute: roof_equipment
+        type: CHARACTER_VARYING
+        priority: P2
+        multi_source: true
+        uw_relevance: [risk_assessment]
+      - attribute: building_condition
+        type: CHARACTER_VARYING
+        priority: P2
+        multi_source: false
+        uw_relevance: [risk_assessment]
+      - attribute: earthquake_risk_score
+        type: DOUBLE_PRECISION
+        priority: P2
+        multi_source: true
+        uw_relevance: [cat_exposure, pricing]
+      - attribute: flood_risk_score
+        type: DOUBLE_PRECISION
+        priority: P2
+        multi_source: true
+        uw_relevance: [cat_exposure, pricing]
+      - attribute: solar_panels_area
+        type: DOUBLE_PRECISION
+        priority: P2
+        multi_source: true
+        uw_relevance: [risk_assessment, valuation]
+      - attribute: tree_overhang
+        type: CHARACTER_VARYING
+        priority: P2
+        multi_source: false
+        uw_relevance: [risk_assessment]
+      - attribute: facade_material
+        type: CHARACTER_VARYING
+        priority: E2V
+        multi_source: false
+        uw_relevance: [construction, cat_modeling]
+      - attribute: construction_quality
+        type: CHARACTER_VARYING
+        priority: E2V
+        multi_source: false
+        uw_relevance: [valuation, pricing]
+      - attribute: windstorm_or_hail_deductible_percentage
+        type: DOUBLE_PRECISION
+        priority: P2
+        multi_source: true
+        uw_relevance: [deductibles, pricing]
+      - attribute: number_of_buildings
+        type: CHARACTER_VARYING
+        priority: P1
+        multi_source: false
+        uw_relevance: [submission_intake, aggregation]
+      - attribute: floor_area
+        type: DOUBLE_PRECISION
+        priority: P1
+        multi_source: true
+        uw_relevance: [valuation]
+      - attribute: footprint_area
+        type: DOUBLE_PRECISION
+        priority: P2
+        multi_source: true
+        uw_relevance: [valuation]
+
+  Building_Extension:
+    fields:
+      - attribute: total_replacement_value
+        type: DOUBLE_PRECISION
+        priority: CPSF_DEFAULT
+        multi_source: false
+        resolution: "IF E2Value.building_value > Federato.CPSF.building_value THEN use E2Value ELSE use Federato CPSF"
+        uw_relevance: [valuation, itv, limits]
+      - attribute: limits_and_values_e2v_building_value_high
+        type: DOUBLE_PRECISION
+        priority: CPSF_DEFAULT
+        multi_source: false
+        resolution: "IF E2Value > CPSF THEN use E2Value ELSE use CPSF"
+        uw_relevance: [valuation]
+      - attribute: limits_and_values_e2v_building_value_low
+        type: DOUBLE_PRECISION
+        priority: CPSF_DEFAULT
+        multi_source: false
+        resolution: "IF E2Value > CPSF THEN use E2Value ELSE use CPSF"
+        uw_relevance: [valuation]
+      - attribute: limits_and_values_e2v_building_value_medium
+        type: DOUBLE_PRECISION
+        priority: CPSF_DEFAULT
+        multi_source: false
+        resolution: "IF E2Value > CPSF THEN use E2Value ELSE use CPSF"
+        uw_relevance: [valuation]
+      - attribute: fire_sprinkler
+        type: BOOLEAN
+        priority: Downstream
+        multi_source: false
+        uw_relevance: [protection_class]
+
+  NB_Accounts:
+    fields:
+      - attribute: account_name
+        type: CHARACTER_VARYING
+        priority: P1
+        multi_source: true
+        uw_relevance: [submission_intake]
+      - attribute: fein
+        type: CHARACTER_VARYING
+        priority: P1
+        multi_source: false
+        uw_relevance: [submission_intake, compliance, dedup]
+      - attribute: industry_code
+        type: CHARACTER_VARYING
+        priority: P1
+        multi_source: false
+        uw_relevance: [eligibility, pricing]
+      - attribute: business_description
+        type: CHARACTER_VARYING
+        priority: P1
+        multi_source: false
+        uw_relevance: [eligibility, risk_assessment]
+      - attribute: business_segment
+        type: CHARACTER_VARYING
+        priority: P1
+        multi_source: false
+        uw_relevance: [eligibility, pricing]
+      - attribute: effective_date
+        type: DATE
+        priority: P1
+        multi_source: false
+        uw_relevance: [submission_intake, compliance]
+      - attribute: expiration_date
+        type: DATE
+        priority: P1
+        multi_source: false
+        uw_relevance: [submission_intake]
+      - attribute: main_state
+        type: CHARACTER_VARYING
+        priority: P1
+        multi_source: true
+        resolution: "IF Submission_Triage.value IS NOT NULL THEN use Submission_Triage ELSE use Nearmap"
+        uw_relevance: [eligibility, regulatory]
+      - attribute: main_zip_code
+        type: CHARACTER_VARYING
+        priority: P1
+        multi_source: true
+        resolution: "IF Submission_Triage.value IS NOT NULL THEN use Submission_Triage ELSE use Nearmap"
+        uw_relevance: [cat_exposure, pricing]
+      - attribute: loss_ratio
+        type: DOUBLE_PRECISION
+        priority: P2
+        multi_source: true
+        uw_relevance: [risk_assessment, pricing]
+      - attribute: entity_type
+        type: CHARACTER_VARYING
+        priority: P1
+        multi_source: false
+        uw_relevance: [submission_intake]
+
+  Policy:
+    fields:
+      - attribute: policy_type
+        type: CHARACTER_VARYING
+        priority: P1
+        multi_source: false
+        uw_relevance: [forms_selection, eligibility]
+      - attribute: class_of_business
+        type: CHARACTER_VARYING
+        priority: P1
+        multi_source: false
+        uw_relevance: [eligibility, pricing, forms_selection]
+      - attribute: program_type
+        type: CHARACTER_VARYING
+        priority: P1
+        multi_source: false
+        uw_relevance: [forms_selection, carrier_routing]
+      - attribute: effective_date
+        type: DATE
+        priority: P1
+        multi_source: false
+        uw_relevance: [compliance, regulatory]
+      - attribute: expiration_date
+        type: DATE
+        priority: P1
+        multi_source: false
+        uw_relevance: [compliance]
+      - attribute: tiv
+        type: DOUBLE_PRECISION
+        priority: P1
+        multi_source: false
+        uw_relevance: [limits, aggregation, cat_modeling]
+      - attribute: total_premium
+        type: DOUBLE_PRECISION
+        priority: P1
+        multi_source: true
+        uw_relevance: [pricing, reporting]
+      - attribute: commission_percentage
+        type: DOUBLE_PRECISION
+        priority: P1
+        multi_source: false
+        uw_relevance: [pricing, producer_management]
+      - attribute: underwriting_company
+        type: CHARACTER_VARYING
+        priority: P1
+        multi_source: false
+        uw_relevance: [carrier_routing, forms_selection]
+      - attribute: policy_number
+        type: CHARACTER_VARYING
+        priority: P1
+        multi_source: false
+        uw_relevance: [submission_intake, compliance]
+      - attribute: general_aggregate_limit
+        type: DOUBLE_PRECISION
+        priority: P1
+        multi_source: false
+        uw_relevance: [limits, pricing]
+      - attribute: liability_limit
+        type: DOUBLE_PRECISION
+        priority: P1
+        multi_source: false
+        uw_relevance: [limits, pricing]
+      - attribute: all_peril_policy_deductible
+        type: DOUBLE_PRECISION
+        priority: Downstream
+        multi_source: false
+        uw_relevance: [deductibles, cat_modeling]
+      - attribute: expiring_premium
+        type: DOUBLE_PRECISION
+        priority: P1
+        multi_source: false
+        uw_relevance: [pricing, renewal]
+      - attribute: num_claims_above_250k
+        type: DOUBLE_PRECISION
+        priority: P2
+        multi_source: true
+        uw_relevance: [risk_assessment, loss_history]
+      - attribute: rush_request
+        type: BOOLEAN
+        priority: P1
+        multi_source: false
+        uw_relevance: [workflow_routing]
+      - attribute: submitted_at_time
+        type: TIMESTAMP_WITH_TIME_ZONE
+        priority: P1
+        multi_source: false
+        uw_relevance: [sla_tracking]
+
+  Coverage:
+    fields:
+      - attribute: percentage_deductible
+        type: DOUBLE_PRECISION
+        priority: P2
+        multi_source: true
+        uw_relevance: [deductibles, pricing]
+      - attribute: non_owned_detached_trailers
+        type: DOUBLE_PRECISION
+        priority: P2
+        multi_source: true
+        uw_relevance: [coverage_selection]
+      - attribute: outdoor_signs
+        type: DOUBLE_PRECISION
+        priority: P2
+        multi_source: false
+        uw_relevance: [coverage_selection]
+      - attribute: debris_removal
+        type: TEXT
+        priority: P2
+        multi_source: false
+        uw_relevance: [coverage_selection]
+
+  Brokers:
+    fields:
+      - attribute: text
+        type: CHARACTER_VARYING
+        priority: P1
+        multi_source: false
+        uw_relevance: [producer_management, submission_routing]
+      - attribute: main_state
+        type: CHARACTER_VARYING
+        priority: P1
+        multi_source: false
+        uw_relevance: [regulatory, licensing]
+
+  SIC_Code:
+    fields:
+      - attribute: code
+        type: CHARACTER_VARYING
+        priority: P1
+        multi_source: false
+        uw_relevance: [eligibility, pricing, class_code]
+
+  Peril:
+    fields:
+      - attribute: group
+        type: TEXT
+        priority: P1
+        multi_source: false
+        uw_relevance: [coverage_selection, cat_modeling, pricing]

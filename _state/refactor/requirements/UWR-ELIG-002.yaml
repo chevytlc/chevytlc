@@ -1,0 +1,99 @@
+# BEACON Rule Artifact: ELIG-002
+# Minimum TIV Threshold
+# Schema refs: _state/refactor/schema/field-index.yaml
+
+requirement_id: UWR-ELIG-002
+title: Minimum Total Insured Value Threshold
+version: 1.0.0
+status: Draft
+
+source:
+  type: carrier_da
+  document: LRMGA Binding Authority Agreement
+  section: Minimum Account Size
+  effective_date: 2025-01-01
+  expiration_date: null
+  verbatim: "[TODO: Extract verbatim from DA - minimum TIV requirement]"
+
+beacon_alignment:
+  layer: Control
+  enforcement_tier: Hard Block
+  override_authority: null
+  failure_prevented: Binding risks below minimum account size that create adverse selection
+
+domain: appetite
+
+rule:
+  statement: >
+    Submissions with total insured value below the carrier-specified minimum
+    are automatically declined. Minimum TIV threshold is carrier-specific and
+    maintained as a parameter.
+  logic: |
+    IF Policy.tiv < CARRIER_PARAM.min_tiv
+    THEN decline = TRUE
+         decline_reason = "Total insured value below minimum threshold"
+  scope:
+    lifecycle_phase: Submission Ingestion
+    peril: All
+    geography: All (excl AK, HI per ELIG-001)
+    occupancy: All
+    construction: All
+    limit_range: All
+  parameters:
+    - name: CARRIER_PARAM.min_tiv
+      type: DOUBLE_PRECISION
+      description: Carrier-specific minimum TIV
+      current_value: "[TODO: Populate from DA]"
+      source: Binding Authority Agreement
+
+data_requirements:
+  fields:
+    - name: Policy.tiv
+      type: DOUBLE_PRECISION
+      source: SOV
+      priority: P1
+      enrichment_provider: null
+      required_at_phase: Submission Ingestion
+    - name: Building.tiv
+      type: DOUBLE_PRECISION
+      source: SOV
+      priority: P1
+      enrichment_provider: null
+      required_at_phase: Submission Ingestion
+
+  enrichment_dependencies: []
+
+implementation:
+  evaluation_point: Submission Ingestion - after SOV parsing, before enrichment
+  actions:
+    - condition: "Policy.tiv < CARRIER_PARAM.min_tiv"
+      action: Block Transaction
+  user_feedback: >
+    This submission does not meet the minimum total insured value requirement.
+    Minimum TIV: ${CARRIER_PARAM.min_tiv}.
+  sequential_dependencies:
+    - UWR-ELIG-001  # Geography check first
+
+federato_mapping:
+  athena_rule_id: "[TODO: Assign]"
+  tables: [operations_policy]
+  fields: [tiv]
+  workflow_stage: Submission Intake
+  field_mapping:
+    - artifact_field: Policy.tiv
+      federato_field: tiv
+      federato_table: operations_policy
+  notes: "[TODO: Confirm Federato rule configuration]"
+
+lifecycle:
+  owner: Chief Underwriting Officer
+  review_cadence: On Source Renewal
+  next_review_date: "[TODO]"
+  sunset_trigger: Binding authority terms change
+  last_reviewed: null
+  last_reviewed_by: null
+  change_history:
+    - version: 1.0.0
+      date: 2026-03-01
+      author: CTOO
+      description: Initial creation from agentic refactor Phase 1

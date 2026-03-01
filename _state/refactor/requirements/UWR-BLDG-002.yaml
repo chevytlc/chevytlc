@@ -1,0 +1,142 @@
+# BEACON Rule Artifact: BLDG-002
+# Construction Type Eligibility
+# Schema refs: _state/refactor/schema/field-index.yaml
+
+requirement_id: UWR-BLDG-002
+title: Construction Type Eligibility and Classification
+version: 1.0.0
+status: Draft
+
+source:
+  type: carrier_da
+  document: LRMGA Binding Authority Agreement
+  section: Eligible Construction Types
+  effective_date: 2025-01-01
+  expiration_date: null
+  verbatim: "[TODO: Extract verbatim from DA - construction type requirements]"
+
+beacon_alignment:
+  layer: Control
+  enforcement_tier: Gated Referral
+  override_authority: Chief Underwriting Officer
+  failure_prevented: >
+    Binding ineligible construction classes or misclassifying construction
+    type leading to inadequate pricing
+
+domain: appetite
+
+rule:
+  statement: >
+    Construction type must be one of the carrier-approved classes. Frame
+    construction in high-wind zones or non-standard construction types
+    require referral. Construction type from SOV (P1) is authoritative;
+    E2Value provides facade_material and construction_quality enrichment
+    but does NOT override construction_type classification.
+  logic: |
+    construction = RESOLVE(Building.construction_type)  # P1 Submission Triage
+
+    IF construction NOT IN CARRIER_PARAM.eligible_construction_types
+    THEN decline = TRUE
+         decline_reason = "Construction type '{construction}' not eligible"
+
+    ELSE IF construction IN CARRIER_PARAM.referral_construction_types
+    THEN referral = TRUE
+         referral_reason = "Construction type '{construction}' requires CUO review"
+
+    # Cross-reference with enrichment for conflict detection
+    IF Building.facade_material IS NOT NULL
+       AND facade_material_conflicts_with(construction, Building.facade_material)
+    THEN flag = ADVISORY
+         flag_reason = "SOV construction type conflicts with E2Value facade material"
+  scope:
+    lifecycle_phase: Risk Assessment
+    peril: All
+    geography: All (excl AK, HI per ELIG-001)
+    occupancy: All
+    construction: All
+    limit_range: All
+  parameters:
+    - name: CARRIER_PARAM.eligible_construction_types
+      type: enum_list
+      description: Carrier-approved construction classifications
+      current_value: "[TODO: Populate from DA]"
+      source: Binding Authority Agreement
+    - name: CARRIER_PARAM.referral_construction_types
+      type: enum_list
+      description: Construction types requiring referral
+      current_value: "[TODO: Populate from DA]"
+      source: Binding Authority Agreement
+
+data_requirements:
+  fields:
+    - name: Building.construction_type
+      type: CHARACTER_VARYING
+      source: SOV
+      priority: P1
+      enrichment_provider: null
+      required_at_phase: Risk Assessment
+    - name: Building.facade_material
+      type: CHARACTER_VARYING
+      source: Enrichment
+      priority: E2V
+      enrichment_provider: E2Value
+      required_at_phase: Risk Assessment
+    - name: Building.construction_quality
+      type: CHARACTER_VARYING
+      source: Enrichment
+      priority: E2V
+      enrichment_provider: E2Value
+      required_at_phase: Risk Assessment
+
+  enrichment_dependencies:
+    - provider: E2Value
+      data_elements: [facade_material, construction_quality]
+      trigger: Always (enrichment data, not override)
+
+implementation:
+  evaluation_point: Risk Assessment - after enrichment
+  actions:
+    - condition: "construction NOT IN eligible list"
+      action: Block Transaction
+    - condition: "construction IN referral list"
+      action: Route to Referral
+    - condition: "facade_material conflicts with construction_type"
+      action: Flag for Review
+  user_feedback: >
+    Construction type '{construction}' requires review. Check E2Value
+    facade material enrichment for consistency.
+  sequential_dependencies:
+    - UWR-ELIG-001
+    - UWR-ELIG-002
+
+federato_mapping:
+  athena_rule_id: "[TODO: Assign]"
+  tables: [operations_building]
+  fields: [construction_type, facade_material, construction_quality]
+  workflow_stage: Risk Assessment
+  field_mapping:
+    - artifact_field: Building.construction_type
+      federato_field: construction_type
+      federato_table: operations_building
+    - artifact_field: Building.facade_material
+      federato_field: facade_material
+      federato_table: operations_building
+    - artifact_field: Building.construction_quality
+      federato_field: construction_quality
+      federato_table: operations_building
+  notes: >
+    construction_type is P1 (Submission Triage). facade_material and
+    construction_quality are E2Value-only fields (no multi-source conflict).
+
+lifecycle:
+  owner: Chief Underwriting Officer
+  review_cadence: On Source Renewal
+  next_review_date: "[TODO]"
+  sunset_trigger: Carrier updates construction eligibility
+  last_reviewed: null
+  last_reviewed_by: null
+  change_history:
+    - version: 1.0.0
+      date: 2026-03-01
+      author: CTOO
+      description: Initial creation from agentic refactor Phase 1
