@@ -2,8 +2,10 @@
 
 **Date:** 2026-03-01
 **Owner:** Chevy (CTOO)
-**Status:** Draft -- pending team review
+**Status:** Active
 **Governs:** DR-001 (Claude Teams as convenience layer)
+**Instructions:** See `_state/projects/instructions/` (BEACON-first, deployed to platform second)
+**Manifests:** See `_state/projects/manifests/` (document inventory and upload status per Project)
 
 ## Design Principles
 
