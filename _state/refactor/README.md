@@ -1,138 +1,144 @@
-# BEACON Agentic Refactor — Requirements, Forms, and Schema
+# BEACON Agentic Refactor — Rules, Forms, and Schema
 
-**Version:** 1.0.0
-**Date:** 2026-03-01
+**Version:** 2.0.0
+**Date:** 2026-03-02
 **Owner:** CTOO
-**Status:** Phase 1 — Initial extraction from meta dictionary and rule artifact specification
+**Status:** Phase 1 complete — All 100 rules and 78 forms extracted from Federato source files
 
 ---
 
 ## What This Is
 
-Structured, agent-parseable YAML artifacts for:
+Three agent-parseable YAML files extracted from the actual xlsx files sent to Federato:
 
-1. **Schema** — Field-level index extracted from Meta Dictionary v5 (172 fields across 14 Federato entities). This is the shared dependency that rules and forms import.
-2. **Requirements** — Underwriting rules as `UWR-XXX.yaml` files. Each rule is one file, references fields by `Entity.attribute`, includes source traceability, enforcement tier, and Federato mapping.
-3. **Forms** — Form specifications as `FORM-XXX.yaml` files. Each form is one file, lists which fields it captures, which rules it triggers, and which enrichment it initiates.
+1. **`schema/field-index.yaml`** — Field-level index from Meta Dictionary v5 (172 fields, 14 entities). Shared dependency that rules and forms reference.
+2. **`underwriting-rules.yaml`** — All 100 UW rules in tabular format. Each rule includes logic expression, canonical Federato field mappings, enforcement tier, enrichment dependencies, and DA source citations.
+3. **`forms-library.yaml`** — All 78 forms in tabular format. Each form includes disposition, condition logic with canonical field mappings, formset assignments, readiness gates, and CUO notes.
+
+## Source Files
+
+| Artifact | Source xlsx | Location |
+|----------|-----------|----------|
+| underwriting-rules.yaml | Lighthouse_Risk_Underwriting_Rules.xlsx | beacon/domains/ |
+| forms-library.yaml | LRMGA Forms Library v1.xlsx | beacon/domains/ |
+| field-index.yaml | meta-dictionary-v5.xlsx | beacon/contracts/ |
 
 ## Design Principles
 
-### One file = one artifact = no merge conflicts
+### Tabular format preserves the spreadsheet structure
 
-Every rule, form, and schema entity is a separate YAML file. Multi-dev teams can work on different rules/forms simultaneously without merge conflicts. Agents can read/write individual artifacts without loading the full knowledge base.
+Rules and forms stay as arrays of records — the same layout as the xlsx. Humans can scan, filter, and compare. Agents iterate the array and filter by `category`, `type`, `disposition`, or `condition.canonical`.
 
 ### Field references are canonical
 
-All references to data fields use the format `Entity.attribute` (e.g., `Building.year_built`, `Location.state`). These resolve against `schema/field-index.yaml`, which is extracted from the canonical-reference.json in the beacon contracts layer.
+Rule and form references to data use `Entity.attribute` format (e.g., `Building.year_built`, `Location.state`). The `canonical_fields` array in each rule maps the original source field names to the Federato schema. Fields resolve against `schema/field-index.yaml`.
 
-### Source priority is embedded
+### Source priority is embedded in the schema
 
-Every field reference includes its source priority (P1 Submission > P2 Nearmap > CPSF > Conditional E2Value > Downstream AIR). Rules that use multi-source fields include resolution logic that matches the meta dictionary's conflict rules.
+`field-index.yaml` carries the priority chain (P1 Submission > P2 Nearmap > CPSF > E2Value > Downstream AIR) and multi-source resolution rules for every field. Rules that use multi-source fields inherit these resolution rules.
 
 ### Rules reference rules
 
-Rules declare `sequential_dependencies` listing which rules must evaluate first. This creates an implicit DAG that agents can traverse to determine evaluation order.
+Rules with `depends_on` declare which rules must evaluate first, creating the evaluation DAG.
 
-### Forms reference rules
+### Multi-dev multi-agent ready
 
-Forms declare `triggers_rules` listing which UWR rules fire on the form's data. This creates the form → rule → field traceability chain.
+Three files, clear boundaries. Schema owner, rules owner, and forms owner can work independently. Agents working on rules don't need to load forms, and vice versa. Merge conflicts are limited to the specific file being edited.
 
 ## Directory Structure
 
 ```
 _state/refactor/
-├── README.md                         # This file
+├── README.md                    # This file
 ├── schema/
-│   └── field-index.yaml              # Agentic field index (from meta dictionary)
-├── requirements/
-│   ├── UWR-ELIG-001.yaml             # Alaska/Hawaii exclusion (Hard Block)
-│   ├── UWR-ELIG-002.yaml             # Minimum TIV threshold (Hard Block)
-│   ├── UWR-BLDG-001.yaml             # Year built eligibility (Gated Referral)
-│   ├── UWR-BLDG-002.yaml             # Construction type eligibility (Gated Referral)
-│   ├── UWR-LIMIT-001.yaml            # Per-location/occurrence limits (Hard Block)
-│   ├── UWR-CAT-001.yaml              # CAT exposure scoring (Gated Referral)
-│   └── UWR-DATA-001.yaml             # Submission completeness (Gated Referral)
-└── forms/
-    ├── FORM-CP-001.yaml              # Commercial property application
-    └── FORM-DW-001.yaml              # Dwelling property application
+│   └── field-index.yaml         # Agentic field index (from meta dictionary v5)
+├── underwriting-rules.yaml      # 100 rules — tabular (from Federato xlsx)
+└── forms-library.yaml           # 78 forms — tabular (from Federato xlsx)
 ```
 
-## Rule Inventory
+## Rule Summary
 
-| Rule ID | Title | Tier | Domain | Key Fields | Status |
-|---------|-------|------|--------|------------|--------|
-| ELIG-001 | Alaska/Hawaii Exclusion | Hard Block | appetite | Location.state | Active |
-| ELIG-002 | Minimum TIV | Hard Block | appetite | Policy.tiv | Draft |
-| BLDG-001 | Year Built Eligibility | Gated Referral | appetite | Building.year_built | Draft |
-| BLDG-002 | Construction Type | Gated Referral | appetite | Building.construction_type | Draft |
-| LIMIT-001 | Per-Location/Occurrence Limits | Hard Block | pricing | Building.building_limit, Policy.tiv | Draft |
-| CAT-001 | CAT Exposure Scoring | Gated Referral | pricing | Building.earthquake_risk_score, Building.flood_risk_score | Draft |
-| DATA-001 | Submission Completeness | Gated Referral | compliance | 13 critical fields | Draft |
+**100 rules** across 8 categories:
 
-## Form Inventory
+| Category | Count | Types |
+|----------|-------|-------|
+| Geography (ELIG) | 2 | Hard Decline |
+| Occupancy (ELIG) | 10 | Hard Decline |
+| Building (ELIG/BLDG) | 19 | Hard Decline, Soft Decline, Conditional |
+| Protection Class | 3 | Hard Decline, Soft Decline |
+| Coverage Limits (LIMIT/COV) | 26 | Threshold, Soft Decline |
+| Deductibles (DED) | 8 | Threshold |
+| Aggregation (AGG) | 7 | Threshold |
+| Operational (DATA/INSP/OPER/RATE) | 25 | Informational, Conditional |
 
-| Form ID | Title | Type | Selection Field | Status |
-|---------|-------|------|-----------------|--------|
-| CP-001 | Commercial Property Application | application | Policy.policy_type = "Commercial Property" | Draft |
-| DW-001 | Dwelling Property Application | application | Policy.policy_type = "Dwelling Property" | Draft |
+**Enforcement tiers:**
+- **Hard Decline (23):** Auto-decline, no override. Geography, prohibited occupancies, building conditions.
+- **Soft Decline (8):** Referral with CUO/Leadership approval. Building age, protection class, coverage limits.
+- **Threshold (24):** Limit/deductible boundaries. No HITL unless exceeded.
+- **Conditional (15):** Context-dependent rules. Inspection requirements, coverage allocation.
+- **Informational (14):** Advisory. Required fields, operational procedures.
 
-## Rule Evaluation DAG
+## Form Summary
 
-```
-Submission Ingestion:
-  UWR-DATA-001 (completeness check)
-  └─→ UWR-ELIG-001 (geography)
-      └─→ UWR-ELIG-002 (minimum TIV)
+**78 forms** across 6 disposition types:
 
-Risk Assessment:
-  UWR-BLDG-001 (year built)
-  UWR-BLDG-002 (construction type)
-  UWR-LIMIT-001 (limit boundaries + ITV)
-  └─→ UWR-CAT-001 (CAT exposure scoring)
-```
+| Disposition | Count | Description |
+|-------------|-------|-------------|
+| Mandatory | 28 | Always attached. No UW discretion. |
+| Conditional-Mandatory | 9 | Attached when condition met. No discretion once triggered. |
+| Default-On/Removable | 12 | Attached by default. UW may remove with reason. |
+| Default-Off/Addable | 12 | Not attached by default. UW may add. |
+| TBD | 9 | Disposition not yet determined by CUO. |
+| Excluded/Hold/Blocked | 8 | Not available for current phase. |
+
+**Readiness (go-live):**
+- Form Content Ready: 40 of 78
+- Rule Logic Defined: 57 of 78
+- Ready for Federato: 33 of 78
+- Federato Configured: 0 of 78
+- Tested/Validated: 0 of 78
 
 ## How Agents Use This
 
-### Reading a rule
+### Evaluating a submission against rules
 ```
-Agent reads: requirements/UWR-ELIG-001.yaml
-Agent extracts: rule.logic, data_requirements.fields
-Agent resolves field types via: schema/field-index.yaml
-Agent knows enforcement tier: beacon_alignment.enforcement_tier
-```
-
-### Evaluating a submission
-```
-1. Load form spec (e.g., FORM-CP-001.yaml)
-2. Identify triggers_rules list
-3. Load each rule's YAML
-4. Evaluate rules in DAG order (sequential_dependencies)
-5. For each field, resolve source priority from field-index.yaml
-6. Apply rule logic
-7. Return: [decline | referral | advisory | pass]
+1. Load underwriting-rules.yaml
+2. Filter rules by lifecycle phase (Submission Ingestion first, then Risk Assessment)
+3. For each rule, resolve canonical_fields against field-index.yaml
+4. Evaluate rule.logic against submission data
+5. Respect depends_on ordering (evaluation DAG)
+6. Return: [decline | referral | advisory | pass] per rule
 ```
 
-### Creating a new rule
+### Determining which forms to attach
 ```
-1. Copy any existing UWR-XXX.yaml as template
-2. Assign new ID per prefix convention (ELIG, BLDG, LIMIT, DED, COV, VAL, AGG, OPS, DATA, BI, PC, CAT)
-3. Reference fields from schema/field-index.yaml
-4. Declare sequential_dependencies
-5. Add to triggers_rules in relevant form YAML
+1. Load forms-library.yaml
+2. Filter forms by disposition = Mandatory (always attach)
+3. For Conditional-Mandatory forms, evaluate condition against submission
+4. For Default-On, attach unless UW explicitly removes
+5. Resolve condition.canonical against field-index.yaml
+```
+
+### Adding a new rule
+```
+1. Open underwriting-rules.yaml
+2. Append new record to rules[] array
+3. Assign ID per prefix convention (ELIG, BLDG, LIMIT, DED, COV, VAL, AGG, OPS, DATA)
+4. Map source_fields to canonical_fields using field-index.yaml
+5. Set depends_on if evaluation order matters
 ```
 
 ## Relationship to BEACON
 
 - **field-index.yaml** is a compact projection of `contracts/schemas/canonical-reference.json`
-- **UWR-XXX.yaml** follows the structure from `framework/rule-artifact-specification.md`
-- **FORM-XXX.yaml** is the new artifact type designed for this refactor (no prior equivalent in BEACON)
-- This directory lives in `chevytlc` (CTOO personal corpus) until validated, then promotes to `lrmga-knowledge`
+- **underwriting-rules.yaml** is the machine-readable version of the xlsx sent to Federato
+- **forms-library.yaml** is the machine-readable version of the forms xlsx sent to Federato
+- This directory lives in `chevytlc` until validated, then promotes to `lrmga-knowledge`
 
 ## Next Steps
 
-1. **Populate CARRIER_PARAM values** from binding authority agreements (requires DA access)
-2. **Create remaining rule artifacts** for the 100+ rules identified in the rule taxonomy
-3. **Add endorsement/binder/policy forms** (FORM-CP-002 through FORM-XX-NNN)
-4. **Connect to Federato rule IDs** once FED-02/FED-03 form builder config completes
-5. **Validate against Federato field names** with IaC-DICT-001/002 data dictionary outputs
-6. **Promote to lrmga-knowledge** once CUO validates rule content
+1. **Map remaining [UNMAPPED] fields** — Some rule fields don't have canonical Federato mappings yet (e.g., `barrier_island_flag`, `systems_updated`, `soil_type`). These need IaC-DICT work or HazardHub field mapping.
+2. **Connect formsets to rules** — Cross-reference which rules apply to which formset combinations.
+3. **Populate Federato rule IDs** — Once FED-02/FED-03 form builder config completes.
+4. **Validate readiness gates** — 0/78 forms are Federato-configured or tested.
+5. **Promote to lrmga-knowledge** once CUO validates.

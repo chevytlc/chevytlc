@@ -1,0 +1,1873 @@
+# LRMGA Underwriting Rules — Tabular Format
+# Source: Lighthouse_Risk_Underwriting_Rules.xlsx (sent to Federato)
+# Schema refs: _state/refactor/schema/field-index.yaml
+# canonical_fields: mapped to Federato Entity.attribute from field-index
+# Agents: iterate rules[] array, filter by category/type, resolve fields via schema
+
+metadata:
+  title: LRMGA Underwriting Rules - Federato Reference
+  source_file: Lighthouse_Risk_Underwriting_Rules.xlsx
+  version: 1.0.0
+  extracted: '2026-03-02'
+  total_rules: 100
+  schema_ref: _state/refactor/schema/field-index.yaml
+  categories:
+  - Aggregation
+  - Building
+  - Business Income
+  - Coverage Limits
+  - Deductibles
+  - Geography
+  - Occupancy
+  - Operational
+  - Protection Class
+  - Valuations
+  types:
+  - Conditional
+  - Hard Decline
+  - Informational
+  - Soft Decline
+  - Threshold
+rules:
+- id: ELIG-001
+  category: Geography
+  type: Hard Decline
+  statement: Lighthouse Risk will not write any business in Alaska or Hawaii
+  logic: IF state IN ['AK', 'HI'] THEN decline = TRUE
+  source_fields: state
+  canonical_fields:
+  - Location.state
+  data_source: SOV
+  enrichment: None
+  hitl: false
+  checkpoint_stage: None
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Ineligible Geography, Page 3
+  impl_notes: Can be evaluated at submission intake
+  depends_on: None
+- id: ELIG-002
+  category: Geography
+  type: Hard Decline
+  statement: Will not write any risk located on a barrier island
+  logic: IF barrier_island = TRUE THEN decline = TRUE
+  source_fields: location_coordinates, barrier_island_flag
+  canonical_fields:
+  - Location.latitude
+  - Location.longitude
+  - Location.barrier_island_flag
+  data_source: SOV, HazardHub
+  enrichment: HazardHub
+  hitl: false
+  checkpoint_stage: None
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Ineligible Geography, Page 3
+  impl_notes: Requires geocoding and barrier island identification
+  depends_on: None
+  todo: Need betterview field for Aziz
+- id: ELIG-003
+  category: Occupancy
+  type: Hard Decline
+  statement: Casinos, Bars, Taverns, Nightclubs, Pool & Billiard prohibited
+  logic: IF occupancy IN ['Casino', 'Bar', 'Tavern', 'Nightclub', 'Pool Hall', 'Billiard'] THEN decline = TRUE
+  source_fields: occupancy
+  canonical_fields:
+  - Building.occupancy
+  data_source: SOV
+  enrichment: None
+  hitl: false
+  checkpoint_stage: None
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Ineligible Risk & Exposures, Page 4
+  impl_notes: Check primary and secondary occupancy classifications
+  depends_on: None
+- id: ELIG-004
+  category: Occupancy
+  type: Hard Decline
+  statement: Auto Repair & Tire Shops prohibited
+  logic: IF occupancy IN ['Auto Repair', 'Tire Shop'] THEN decline = TRUE
+  source_fields: occupancy
+  canonical_fields:
+  - Building.occupancy
+  data_source: SOV
+  enrichment: None
+  hitl: false
+  checkpoint_stage: None
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Ineligible Risk & Exposures, Page 4
+  impl_notes: Check for mixed-use with auto repair
+  depends_on: None
+- id: ELIG-005
+  category: Occupancy
+  type: Hard Decline
+  statement: Marijuana Dispensaries prohibited
+  logic: IF occupancy = 'Marijuana Dispensary' THEN decline = TRUE
+  source_fields: occupancy
+  canonical_fields:
+  - Building.occupancy
+  data_source: SOV
+  enrichment: None
+  hitl: false
+  checkpoint_stage: None
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Ineligible Risk & Exposures, Page 4
+  impl_notes: Federal illegality issue
+  depends_on: None
+- id: ELIG-006
+  category: Occupancy
+  type: Hard Decline
+  statement: Laundromats prohibited
+  logic: IF occupancy = 'Laundromat' THEN decline = TRUE
+  source_fields: occupancy
+  canonical_fields:
+  - Building.occupancy
+  data_source: SOV
+  enrichment: None
+  hitl: false
+  checkpoint_stage: None
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Ineligible Risk & Exposures, Page 4
+  impl_notes: High water damage risk
+  depends_on: None
+- id: ELIG-007
+  category: Occupancy
+  type: Hard Decline
+  statement: Fireworks, Lumber & Mill Yards, Tobacco sales prohibited
+  logic: IF occupancy IN ['Fireworks', 'Lumber Yard', 'Mill Yard', 'Tobacco Sales'] THEN decline = TRUE
+  source_fields: occupancy
+  canonical_fields:
+  - Building.occupancy
+  data_source: SOV
+  enrichment: None
+  hitl: false
+  checkpoint_stage: None
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Ineligible Risk & Exposures, Page 4
+  impl_notes: High fire risk exposures
+  depends_on: None
+- id: ELIG-008
+  category: Occupancy
+  type: Hard Decline
+  statement: Nursing Homes, Healthcare facilities (excluding retirement/independent living) prohibited
+  logic: IF occupancy IN ['Nursing Home', 'Extended Care', 'Convalescent', 'Healthcare Facility'] AND NOT IN ['Retirement Community', 'Independent
+    Senior Living'] THEN decline = TRUE
+  source_fields: occupancy, facility_type
+  canonical_fields:
+  - Building.occupancy
+  - Building.occupancy_description
+  data_source: SOV
+  enrichment: None
+  hitl: false
+  checkpoint_stage: None
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Ineligible Risk & Exposures, Page 4
+  impl_notes: Life safety concerns, distinguish from independent senior living
+  depends_on: None
+- id: ELIG-009
+  category: Occupancy
+  type: Hard Decline
+  statement: Children's Day Care operated by insured prohibited
+  logic: IF occupancy = 'Day Care' AND insured_operated = TRUE THEN decline = TRUE
+  source_fields: occupancy, operator
+  canonical_fields:
+  - Building.occupancy
+  - operator
+  data_source: SOV
+  enrichment: None
+  hitl: false
+  checkpoint_stage: None
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Ineligible Risk & Exposures, Page 4
+  impl_notes: Child safety liability concerns
+  depends_on: None
+- id: ELIG-010
+  category: Occupancy
+  type: Hard Decline
+  statement: School/University owned Dormitory/Student Housing, Fraternity/Sorority houses prohibited
+  logic: IF occupancy IN ['Dormitory', 'Student Housing', 'Fraternity House', 'Sorority House'] THEN decline = TRUE
+  source_fields: occupancy
+  canonical_fields:
+  - Building.occupancy
+  data_source: SOV
+  enrichment: None
+  hitl: false
+  checkpoint_stage: None
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Ineligible Risk & Exposures, Page 4
+  impl_notes: High occupancy and life safety risks
+  depends_on: None
+- id: ELIG-011
+  category: Occupancy
+  type: Hard Decline
+  statement: Food processing and manufacturing prohibited
+  logic: IF occupancy IN ['Food Processing', 'Food Manufacturing'] THEN decline = TRUE
+  source_fields: occupancy
+  canonical_fields:
+  - Building.occupancy
+  data_source: SOV
+  enrichment: None
+  hitl: false
+  checkpoint_stage: None
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Ineligible Risk & Exposures, Page 4
+  impl_notes: Complex operational hazards
+  depends_on: None
+- id: ELIG-012
+  category: Building
+  type: Hard Decline
+  statement: Wood shake or wood shingled roofs prohibited
+  logic: IF roof_covering IN ['Wood Shake', 'Wood Shingle'] THEN decline = TRUE
+  source_fields: roof_covering
+  canonical_fields:
+  - Building.roof_covering
+  data_source: SOV, Betterview
+  enrichment: Betterview
+  hitl: false
+  checkpoint_stage: None
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Ineligible Risk & Exposures, Page 4
+  impl_notes: High fire risk, use aerial imagery to verify
+  depends_on: None
+- id: ELIG-013
+  category: Building
+  type: Hard Decline
+  statement: Mobile homes/RV/Trailer parks (unless <5% TIV incidental)
+  logic: IF occupancy IN ['Mobile Home Park', 'RV Park', 'Trailer Park'] AND TIV_percentage >= 0.05 THEN decline = TRUE
+  source_fields: occupancy, TIV_percentage
+  canonical_fields:
+  - Building.occupancy
+  - TIV_percentage
+  data_source: SOV
+  enrichment: None
+  hitl: false
+  checkpoint_stage: None
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Ineligible Risk & Exposures, Page 4
+  impl_notes: Exception for incidental exposures <5% TIV
+  depends_on: None
+- id: ELIG-014
+  category: Building
+  type: Hard Decline
+  statement: Non-remediated aluminum wiring, fuses, knob & tube, pigtail wiring prohibited
+  logic: IF (aluminum_wiring = TRUE OR knob_tube = TRUE OR pigtail_wiring = TRUE) AND remediated = FALSE THEN decline = TRUE
+  source_fields: wiring_type, remediation_status
+  canonical_fields:
+  - wiring_type
+  - remediation_status
+  data_source: Inspection Report
+  enrichment: None
+  hitl: true
+  checkpoint_stage: Risk Clearance
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Ineligible Risk & Exposures, Page 4
+  impl_notes: Requires inspection for buildings >25 years old
+  depends_on: ELIG-030
+- id: ELIG-015
+  category: Building
+  type: Hard Decline
+  statement: Buildings in course of construction prohibited
+  logic: IF construction_status = 'Under Construction' THEN decline = TRUE
+  source_fields: construction_status, certificate_of_occupancy
+  canonical_fields:
+  - construction_status
+  - certificate_of_occupancy
+  data_source: SOV
+  enrichment: None
+  hitl: false
+  checkpoint_stage: None
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Ineligible Risk & Exposures, Page 4
+  impl_notes: Certificate of general occupancy required before effective date
+  depends_on: None
+- id: ELIG-016
+  category: Protection Class
+  type: Hard Decline
+  statement: Unprotected protection class designation prohibited
+  logic: IF protection_class = 'Unprotected' THEN decline = TRUE
+  source_fields: protection_class
+  canonical_fields:
+  - protection_class
+  data_source: SOV, HazardHub
+  enrichment: HazardHub
+  hitl: false
+  checkpoint_stage: None
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Protection Class & Wildfire Exposure, Page 5
+  impl_notes: AAIS unprotected designation
+  depends_on: None
+- id: ELIG-017
+  category: Protection Class
+  type: Soft Decline
+  statement: Protection class ≥ PP1 requires CUO/Executive approval
+  logic: IF protection_class >= 'PP1' THEN referral = TRUE
+  source_fields: protection_class
+  canonical_fields:
+  - protection_class
+  data_source: SOV, HazardHub
+  enrichment: HazardHub
+  hitl: true
+  checkpoint_stage: Risk Clearance
+  exception_path: true
+  exception_authority: CUO or Executive Management
+  source_ref: Protection Class & Wildfire Exposure, Page 5
+  impl_notes: Document approval in file
+  depends_on: None
+- id: ELIG-018
+  category: Building
+  type: Hard Decline
+  statement: Moderate to high wildfire risk areas prohibited
+  logic: IF enhanced_wildfire.score IN ['D', 'E', 'F'] THEN decline = TRUE
+  source_fields: payload.partnerHubGraph.hazard_hub_risks_and_enhanced_property[0].risks.enhanced_wildfire.score
+  canonical_fields:
+  - payload.partnerHubGraph.hazard_hub_risks_and_enhanced_property[0].risks.enhanced_wildfire.score
+  data_source: SOV, HazardHub
+  enrichment: HazardHub
+  hitl: false
+  checkpoint_stage: None
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Protection Class & Wildfire Exposure, Page 5
+  impl_notes: Use wildfire risk scoring tools
+  depends_on: None
+- id: ELIG-019
+  category: Building
+  type: Hard Decline
+  statement: Structures on National Register of Historic Places (NRHP) prohibited
+  logic: IF NRHP_listed = TRUE THEN decline = TRUE
+  source_fields: NRHP_status
+  canonical_fields:
+  - NRHP_status
+  data_source: SOV, Public Records
+  enrichment: None
+  hitl: false
+  checkpoint_stage: None
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Ineligible Risk & Exposures, Page 4
+  impl_notes: Check NRHP database
+  depends_on: None
+  todo: Stays in backlog
+- id: ELIG-020
+  category: Building
+  type: Hard Decline
+  statement: Vacant buildings (occupancy <60%) prohibited unless coming off builder's risk
+  logic: IF occupancy_rate < 0.60 AND builder_risk_status != 'Coming Off' THEN decline = TRUE
+  source_fields: occupancy_rate, builder_risk_status, leasing_plan
+  canonical_fields:
+  - Building.occupancy_description
+  - builder_risk_status
+  - leasing_plan
+  data_source: SOV, Inspection
+  enrichment: None
+  hitl: true
+  checkpoint_stage: Risk Clearance
+  exception_path: true
+  exception_authority: CUO/COO with active leasing plan
+  source_ref: Ineligible Risk & Exposures, Page 4
+  impl_notes: Exception for first term with active leasing plan
+  depends_on: None
+  todo: Stays in backlog
+- id: ELIG-021
+  category: Building
+  type: Hard Decline
+  statement: Risks with >25% Section 8 occupancy prohibited
+  logic: IF section8_percentage > 0.25 THEN decline = TRUE
+  source_fields: section8_percentage
+  canonical_fields:
+  - section8_percentage
+  data_source: SOV, Underwriting Questionnaire
+  enrichment: None
+  hitl: true
+  checkpoint_stage: Submission Ingestion
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Ineligible Risk & Exposures, Page 4
+  impl_notes: Verify at underwriting
+  depends_on: None
+  todo: Stays in backlog
+- id: ELIG-022
+  category: Building
+  type: Hard Decline
+  statement: Municipal, State or Federal Housing Authority owned risks prohibited
+  logic: IF owner IN ['Municipal Housing Authority', 'State Housing Authority', 'Federal Housing Authority'] THEN decline = TRUE
+  source_fields: owner_type
+  canonical_fields:
+  - NB_Accounts.entity_type
+  data_source: SOV
+  enrichment: None
+  hitl: false
+  checkpoint_stage: None
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Ineligible Risk & Exposures, Page 4
+  impl_notes: Check ownership structure
+  depends_on: None
+  todo: Stays in backlog
+- id: ELIG-023
+  category: Operational
+  type: Hard Decline
+  statement: Insured in receivership/bankruptcy or filed in past 5 years prohibited
+  logic: IF (bankruptcy_status = 'Active' OR bankruptcy_date > DATE_ADD(TODAY(), -5 YEARS)) THEN decline = TRUE
+  source_fields: bankruptcy_status, bankruptcy_date
+  canonical_fields:
+  - bankruptcy_status
+  - bankruptcy_date
+  data_source: Public Records, Underwriting App
+  enrichment: TransUnion
+  hitl: true
+  checkpoint_stage: Submission Ingestion
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Ineligible Risk & Exposures, Page 4
+  impl_notes: Check court records and credit reports
+  depends_on: None
+- id: BLDG-001
+  category: Building
+  type: Soft Decline
+  statement: Buildings older than 1990 require systems update within 25 years
+  logic: IF year_built < 1990 AND (plumbing_update > 25 OR hvac_update > 25 OR electrical_update > 25 OR roof_update > 25) THEN referral = TRUE
+  source_fields: year_built, plumbing_update_year, hvac_update_year, electrical_update_year, roof_update_year
+  canonical_fields:
+  - Building.year_built
+  - plumbing_update_year
+  - hvac_update_year
+  - electrical_update_year
+  - roof_update_year
+  data_source: SOV, Inspection Report
+  enrichment: Betterview
+  hitl: true
+  checkpoint_stage: Risk Clearance
+  exception_path: true
+  exception_authority: Leadership Approval
+  source_ref: Ineligible Risk & Exposures, Page 3
+  impl_notes: All building systems must be substantially updated within last 25 years
+  depends_on: None
+- id: BLDG-002
+  category: Building
+  type: Soft Decline
+  statement: Pre-1990 buildings not fully updated may be offered ACV coverage only
+  logic: IF year_built < 1990 AND systems_updated = FALSE THEN ACV_only = TRUE AND referral = TRUE
+  source_fields: year_built, systems_updated
+  canonical_fields:
+  - Building.year_built
+  - systems_updated
+  data_source: SOV, Inspection
+  enrichment: None
+  hitl: true
+  checkpoint_stage: Risk Clearance
+  exception_path: true
+  exception_authority: Leadership Approval
+  source_ref: Ineligible Risk & Exposures, Page 3
+  impl_notes: ACV coverage pending leadership approval
+  depends_on: BLDG-001
+- id: BLDG-003
+  category: Building
+  type: Soft Decline
+  statement: Exception for pre-1990 buildings representing <10% TIV and <$20M limit per location
+  logic: IF year_built < 1990 AND location_TIV_percentage < 0.10 AND location_limit <= 20000000 THEN exception = TRUE
+  source_fields: year_built, location_TIV_percentage, location_limit
+  canonical_fields:
+  - Building.year_built
+  - location_TIV_percentage
+  - location_limit
+  data_source: SOV
+  enrichment: None
+  hitl: true
+  checkpoint_stage: Risk Clearance
+  exception_path: true
+  exception_authority: Leadership Approval
+  source_ref: Ineligible Risk & Exposures, Page 3
+  impl_notes: Exception pathway for small locations
+  depends_on: BLDG-001
+- id: OPER-001
+  category: Operational
+  type: Soft Decline
+  statement: Previously declined/non-renewed risks require leadership approval if repaired
+  logic: IF previously_declined = TRUE AND repairs_completed = TRUE THEN referral = TRUE
+  source_fields: decline_history, repair_status
+  canonical_fields:
+  - decline_history
+  - repair_status
+  data_source: Internal Records
+  enrichment: None
+  hitl: true
+  checkpoint_stage: Risk Clearance
+  exception_path: true
+  exception_authority: Underwriting Leadership
+  source_ref: General Requirements, Page 3
+  impl_notes: Exception possible with proof of repairs
+  depends_on: None
+- id: LIMIT-001
+  category: Coverage Limits
+  type: Threshold
+  statement: 'Coastal territories: Primary limit up to $10M per location (TIV ≤$90M)'
+  logic: IF coastal_tier IN [1, 2] AND coverage_type = 'Primary' THEN max_limit = 10000000 AND max_TIV = 90000000
+  source_fields: coastal_tier, coverage_type, TIV
+  canonical_fields:
+  - Location.county
+  - Policy.class_of_business
+  - Building.tiv
+  data_source: SOV, Appendix A
+  enrichment: HazardHub
+  hitl: false
+  checkpoint_stage: None
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Coverage Limits - Coastal Territories, Page 5
+  impl_notes: Shared and layered placements
+  depends_on: None
+- id: LIMIT-002
+  category: Coverage Limits
+  type: Threshold
+  statement: 'Coastal territories: Dedicated limit up to $50M per location (TIV ≤$50M)'
+  logic: IF coastal_tier IN [1, 2] AND coverage_type = 'Dedicated' THEN max_limit = 50000000 AND max_TIV = 50000000
+  source_fields: coastal_tier, coverage_type, TIV
+  canonical_fields:
+  - Location.county
+  - Policy.class_of_business
+  - Building.tiv
+  data_source: SOV, Appendix A
+  enrichment: HazardHub
+  hitl: false
+  checkpoint_stage: None
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Coverage Limits - Coastal Territories, Page 5
+  impl_notes: Must meet state-specific age requirements
+  depends_on: LIMIT-003
+- id: LIMIT-003
+  category: Building
+  type: Threshold
+  statement: 'Florida dedicated limits: Frame 2002+, Joisted Masonry 1980+, Superior no restriction'
+  logic: IF state = 'FL' AND coastal_tier IN [1,2] AND coverage_type = 'Dedicated' THEN IF construction = 'Frame' THEN year_built >= 2002 ELSE
+    IF construction = 'Joisted Masonry' THEN year_built >= 1980
+  source_fields: state, coastal_tier, construction, year_built
+  canonical_fields:
+  - Location.state
+  - Location.county
+  - Building.construction_type
+  - Building.year_built
+  data_source: SOV
+  enrichment: None
+  hitl: false
+  checkpoint_stage: None
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Coverage Limits - Coastal Dedicated Limits, Page 5
+  impl_notes: Must meet Miami Dade Code Requirements
+  depends_on: None
+- id: LIMIT-004
+  category: Building
+  type: Threshold
+  statement: 'Texas dedicated limits: Frame 2008+, Joisted Masonry 1980+, Superior no restriction'
+  logic: IF state = 'TX' AND coastal_tier IN [1,2] AND coverage_type = 'Dedicated' THEN IF construction = 'Frame' THEN year_built >= 2008 ELSE
+    IF construction = 'Joisted Masonry' THEN year_built >= 1980
+  source_fields: state, coastal_tier, construction, year_built
+  canonical_fields:
+  - Location.state
+  - Location.county
+  - Building.construction_type
+  - Building.year_built
+  data_source: SOV
+  enrichment: None
+  hitl: false
+  checkpoint_stage: None
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Coverage Limits - Coastal Dedicated Limits, Page 5
+  impl_notes: State-specific age requirements
+  depends_on: None
+- id: LIMIT-005
+  category: Building
+  type: Threshold
+  statement: 'Louisiana dedicated limits: Frame 2006+, Joisted Masonry 1980+, Superior no restriction'
+  logic: IF state = 'LA' AND coastal_tier IN [1,2] AND coverage_type = 'Dedicated' THEN IF construction = 'Frame' THEN year_built >= 2006 ELSE
+    IF construction = 'Joisted Masonry' THEN year_built >= 1980
+  source_fields: state, coastal_tier, construction, year_built
+  canonical_fields:
+  - Location.state
+  - Location.county
+  - Building.construction_type
+  - Building.year_built
+  data_source: SOV
+  enrichment: None
+  hitl: false
+  checkpoint_stage: None
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Coverage Limits - Coastal Dedicated Limits, Page 6
+  impl_notes: State-specific age requirements
+  depends_on: None
+- id: LIMIT-006
+  category: Building
+  type: Threshold
+  statement: 'Alabama/Mississippi dedicated limits: Frame 2018+, Joisted Masonry 1980+, Superior no restriction'
+  logic: IF state IN ['AL', 'MS'] AND coastal_tier IN [1,2] AND coverage_type = 'Dedicated' THEN IF construction = 'Frame' THEN year_built >=
+    2018 ELSE IF construction = 'Joisted Masonry' THEN year_built >= 1980
+  source_fields: state, coastal_tier, construction, year_built
+  canonical_fields:
+  - Location.state
+  - Location.county
+  - Building.construction_type
+  - Building.year_built
+  data_source: SOV
+  enrichment: None
+  hitl: false
+  checkpoint_stage: None
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Coverage Limits - Coastal Dedicated Limits, Page 6
+  impl_notes: State-specific age requirements
+  depends_on: None
+- id: LIMIT-007
+  category: Coverage Limits
+  type: Threshold
+  statement: 'Non-coastal: Primary limit up to $25M per location (TIV ≤$90M)'
+  logic: IF coastal_tier NOT IN [1, 2] AND coverage_type = 'Primary' THEN max_limit = 25000000 AND max_TIV = 90000000
+  source_fields: coastal_tier, coverage_type, TIV
+  canonical_fields:
+  - Location.county
+  - Policy.class_of_business
+  - Building.tiv
+  data_source: SOV, Appendix A
+  enrichment: HazardHub
+  hitl: false
+  checkpoint_stage: None
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Coverage Limits - Non-Coastal Territories, Page 6
+  impl_notes: Shared and layered placements
+  depends_on: None
+- id: LIMIT-008
+  category: Coverage Limits
+  type: Threshold
+  statement: 'Non-coastal: Dedicated limit up to $90M per location (TIV ≤$90M)'
+  logic: IF coastal_tier NOT IN [1, 2] AND coverage_type = 'Dedicated' THEN max_limit = 90000000 AND max_TIV = 90000000
+  source_fields: coastal_tier, coverage_type, TIV
+  canonical_fields:
+  - Location.county
+  - Policy.class_of_business
+  - Building.tiv
+  data_source: SOV, Appendix A
+  enrichment: HazardHub
+  hitl: false
+  checkpoint_stage: None
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Coverage Limits - Non-Coastal Territories, Page 6
+  impl_notes: Must meet sprinkler requirements
+  depends_on: LIMIT-009
+- id: LIMIT-009
+  category: Building
+  type: Threshold
+  statement: 'Non-sprinklered Frame: $5M max, 4 stories max'
+  logic: IF sprinklered = FALSE AND construction = 'Frame' THEN building_limit <= 5000000 AND stories <= 4
+  source_fields: sprinklered, construction, building_limit, stories
+  canonical_fields:
+  - Building.sprinklered
+  - Building.construction_type
+  - Building.building_limit
+  - Building.number_of_stories
+  data_source: SOV
+  enrichment: None
+  hitl: false
+  checkpoint_stage: None
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Building Limits, Page 6
+  impl_notes: Individual building restrictions
+  depends_on: None
+- id: LIMIT-010
+  category: Building
+  type: Threshold
+  statement: 'Non-sprinklered Joisted Masonry: $7.5M max, 5 stories max'
+  logic: IF sprinklered = FALSE AND construction = 'Joisted Masonry' THEN building_limit <= 7500000 AND stories <= 5
+  source_fields: sprinklered, construction, building_limit, stories
+  canonical_fields:
+  - Building.sprinklered
+  - Building.construction_type
+  - Building.building_limit
+  - Building.number_of_stories
+  data_source: SOV
+  enrichment: None
+  hitl: false
+  checkpoint_stage: None
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Building Limits, Page 6
+  impl_notes: Individual building restrictions
+  depends_on: None
+- id: LIMIT-011
+  category: Building
+  type: Threshold
+  statement: 'Non-sprinklered Non-Combustible/Fire Resistive: $10M max, 8 stories max'
+  logic: IF sprinklered = FALSE AND construction IN ['Non-Combustible', 'Fire Resistive'] THEN building_limit <= 10000000 AND stories <= 8
+  source_fields: sprinklered, construction, building_limit, stories
+  canonical_fields:
+  - Building.sprinklered
+  - Building.construction_type
+  - Building.building_limit
+  - Building.number_of_stories
+  data_source: SOV
+  enrichment: None
+  hitl: false
+  checkpoint_stage: None
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Building Limits, Page 6
+  impl_notes: Individual building restrictions
+  depends_on: None
+- id: LIMIT-012
+  category: Building
+  type: Threshold
+  statement: 'Sprinklered Frame: $25M max, 5 stories max'
+  logic: IF sprinklered = TRUE AND construction = 'Frame' THEN building_limit <= 25000000 AND stories <= 5
+  source_fields: sprinklered, construction, building_limit, stories
+  canonical_fields:
+  - Building.sprinklered
+  - Building.construction_type
+  - Building.building_limit
+  - Building.number_of_stories
+  data_source: SOV
+  enrichment: None
+  hitl: false
+  checkpoint_stage: None
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Building Limits, Page 6
+  impl_notes: Individual building restrictions
+  depends_on: None
+- id: LIMIT-013
+  category: Building
+  type: Threshold
+  statement: 'Sprinklered Joisted Masonry: $35M max, 6 stories max'
+  logic: IF sprinklered = TRUE AND construction = 'Joisted Masonry' THEN building_limit <= 35000000 AND stories <= 6
+  source_fields: sprinklered, construction, building_limit, stories
+  canonical_fields:
+  - Building.sprinklered
+  - Building.construction_type
+  - Building.building_limit
+  - Building.number_of_stories
+  data_source: SOV
+  enrichment: None
+  hitl: false
+  checkpoint_stage: None
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Building Limits, Page 6
+  impl_notes: Individual building restrictions
+  depends_on: None
+- id: LIMIT-014
+  category: Building
+  type: Threshold
+  statement: 'Sprinklered Non-Combustible: $45M max, 11 stories max'
+  logic: IF sprinklered = TRUE AND construction = 'Non-Combustible' THEN building_limit <= 45000000 AND stories <= 11
+  source_fields: sprinklered, construction, building_limit, stories
+  canonical_fields:
+  - Building.sprinklered
+  - Building.construction_type
+  - Building.building_limit
+  - Building.number_of_stories
+  data_source: SOV
+  enrichment: None
+  hitl: false
+  checkpoint_stage: None
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Building Limits, Page 6
+  impl_notes: Individual building restrictions
+  depends_on: None
+- id: LIMIT-015
+  category: Building
+  type: Threshold
+  statement: 'Sprinklered Fire Resistive: $55M max, 22 stories max'
+  logic: IF sprinklered = TRUE AND construction = 'Fire Resistive' THEN building_limit <= 55000000 AND stories <= 22
+  source_fields: sprinklered, construction, building_limit, stories
+  canonical_fields:
+  - Building.sprinklered
+  - Building.construction_type
+  - Building.building_limit
+  - Building.number_of_stories
+  data_source: SOV
+  enrichment: None
+  hitl: false
+  checkpoint_stage: None
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Building Limits, Page 6
+  impl_notes: Individual building restrictions
+  depends_on: None
+- id: LIMIT-016
+  category: Coverage Limits
+  type: Threshold
+  statement: Buildings >$10M TIV require FAC coverage attaching at ≥$10M
+  logic: IF building_TIV > 10000000 THEN FAC_required = TRUE AND FAC_attachment >= 10000000
+  source_fields: building_TIV
+  canonical_fields:
+  - Building.tiv
+  data_source: SOV
+  enrichment: None
+  hitl: true
+  checkpoint_stage: Risk Clearance
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Coverage Limits - Note, Page 5-6
+  impl_notes: Facultative reinsurance requirement
+  depends_on: None
+- id: COV-001
+  category: Coverage Limits
+  type: Threshold
+  statement: Earthquake coverage not provided
+  logic: earthquake_coverage = FALSE
+  source_fields: N/A
+  canonical_fields: []
+  data_source: N/A
+  enrichment: None
+  hitl: false
+  checkpoint_stage: None
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Earthquake, Page 6
+  impl_notes: Program exclusion
+  depends_on: None
+- id: COV-002
+  category: Coverage Limits
+  type: Threshold
+  statement: Flood coverage not provided
+  logic: flood_coverage = FALSE
+  source_fields: N/A
+  canonical_fields: []
+  data_source: N/A
+  enrichment: None
+  hitl: false
+  checkpoint_stage: None
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Flood, Page 6
+  impl_notes: Program exclusion
+  depends_on: None
+- id: COV-003
+  category: Coverage Limits
+  type: Threshold
+  statement: Coverage A - Undamaged Portion included up to building limit
+  logic: ordinance_A_limit = building_limit
+  source_fields: building_limit
+  canonical_fields:
+  - Building.building_limit
+  data_source: SOV
+  enrichment: None
+  hitl: false
+  checkpoint_stage: None
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Ordinance and Law, Page 6-7
+  impl_notes: Automatically included
+  depends_on: None
+- id: COV-004
+  category: Coverage Limits
+  type: Threshold
+  statement: 'Coverage B - Demolition: 10% of building limit, $3M max per location, $500K per building'
+  logic: ordinance_B_limit = MIN(building_limit * 0.10, 500000) AND location_B_total <= 3000000
+  source_fields: building_limit
+  canonical_fields:
+  - Building.building_limit
+  data_source: SOV
+  enrichment: None
+  hitl: false
+  checkpoint_stage: None
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Ordinance and Law, Page 7
+  impl_notes: Separate Coverage B limit
+  depends_on: None
+- id: COV-005
+  category: Coverage Limits
+  type: Threshold
+  statement: 'Coverage C - Increased Cost: 10% of building limit, $3M max per location, $500K per building'
+  logic: ordinance_C_limit = MIN(building_limit * 0.10, 500000) AND location_C_total <= 3000000
+  source_fields: building_limit
+  canonical_fields:
+  - Building.building_limit
+  data_source: SOV
+  enrichment: None
+  hitl: false
+  checkpoint_stage: None
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Ordinance and Law, Page 7
+  impl_notes: Separate Coverage C limit
+  depends_on: None
+- id: COV-006
+  category: Coverage Limits
+  type: Soft Decline
+  statement: 'Combined B&C: 20% max of Building Limit, $5M max per location, $750K per building'
+  logic: IF (ordinance_B + ordinance_C) > building_limit * 0.20 THEN referral = TRUE
+  source_fields: building_limit, ordinance_B, ordinance_C
+  canonical_fields:
+  - Building.building_limit
+  - ordinance_B
+  - ordinance_C
+  data_source: SOV
+  enrichment: None
+  hitl: true
+  checkpoint_stage: Risk Clearance
+  exception_path: true
+  exception_authority: COO/CUO
+  source_ref: Ordinance and Law, Page 7
+  impl_notes: COO/CUO approval required if exceeds 20%
+  depends_on: COV-004, COV-005
+- id: COV-007
+  category: Business Income
+  type: Threshold
+  statement: Business Income limits cannot exceed 30% of TIV
+  logic: IF business_income_limit > TIV * 0.30 THEN decline = TRUE
+  source_fields: business_income_limit, TIV
+  canonical_fields:
+  - Building.business_income
+  - Building.tiv
+  data_source: SOV
+  enrichment: None
+  hitl: true
+  checkpoint_stage: Risk Clearance
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Business Income, Page 7
+  impl_notes: Ineligible if BI > 30% TIV
+  depends_on: None
+- id: COV-008
+  category: Business Income
+  type: Threshold
+  statement: 'Monthly Limit of Indemnity: 1/12 standard, 1/6 and 1/18 require approval'
+  logic: IF monthly_limit IN ['1/6', '1/18'] THEN referral = TRUE
+  source_fields: monthly_limit
+  canonical_fields:
+  - monthly_limit
+  data_source: SOV
+  enrichment: None
+  hitl: true
+  checkpoint_stage: Risk Clearance
+  exception_path: true
+  exception_authority: COO/CUO
+  source_ref: Business Income, Page 7
+  impl_notes: 1/6 = 6 months, 1/18 = 18 months require COO/CUO approval
+  depends_on: None
+- id: COV-009
+  category: Business Income
+  type: Threshold
+  statement: 'Extended Period of Indemnity: 365 days maximum'
+  logic: extended_period <= 365
+  source_fields: extended_period
+  canonical_fields:
+  - extended_period
+  data_source: SOV
+  enrichment: None
+  hitl: false
+  checkpoint_stage: None
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Business Income, Page 7
+  impl_notes: 'Options: 60, 90, 180, 365 days'
+  depends_on: None
+- id: COV-010
+  category: Business Income
+  type: Conditional
+  statement: If BI not provided at location level, allocate pro-rata by building/contents
+  logic: IF business_income_location IS NULL THEN business_income_location = business_income_total * (location_BC_value / total_BC_value)
+  source_fields: business_income_total, location_building, location_contents, total_building, total_contents
+  canonical_fields:
+  - business_income_total
+  - location_building
+  - location_contents
+  - total_building
+  - total_contents
+  data_source: SOV
+  enrichment: None
+  hitl: true
+  checkpoint_stage: Submission Ingestion
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Business Income, Page 7
+  impl_notes: Inform insured of allocation in quote
+  depends_on: None
+- id: VAL-001
+  category: Valuations
+  type: Conditional
+  statement: Use e2Value for replacement cost, use lower of e2Value or ITV for policy limits
+  logic: policy_limit = MIN(e2value_RCV, ITV_stated)
+  source_fields: e2value_RCV, ITV_stated
+  canonical_fields:
+  - Building_Extension.total_replacement_value
+  - Building.building_limit
+  data_source: SOV, e2Value
+  enrichment: e2Value
+  hitl: false
+  checkpoint_stage: None
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Valuations, Page 7
+  impl_notes: Subject to Lighthouse minimums
+  depends_on: None
+- id: VAL-002
+  category: Valuations
+  type: Conditional
+  statement: If ITV < 80% of e2Value, consider increasing percentage deductible
+  logic: IF ITV_stated < e2value_RCV * 0.80 THEN consider_deductible_increase = TRUE
+  source_fields: ITV_stated, e2value_RCV, deductible_percentage
+  canonical_fields:
+  - Building.building_limit
+  - Building_Extension.total_replacement_value
+  - deductible_percentage
+  data_source: SOV, e2Value
+  enrichment: e2Value
+  hitl: true
+  checkpoint_stage: Risk Clearance
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Valuations, Page 7
+  impl_notes: Increase deductible 1-2 percentage points to offset lower limit
+  depends_on: None
+- id: VAL-003
+  category: Valuations
+  type: Conditional
+  statement: Coverage may be offered on ACV basis for certain locations/buildings/roofs
+  logic: IF (building_condition = 'Poor' OR roof_age > 25 OR year_built < 1990) THEN coverage_basis = 'ACV'
+  source_fields: building_condition, roof_age, year_built
+  canonical_fields:
+  - Building.building_condition
+  - roof_age
+  - Building.year_built
+  data_source: SOV, Inspection
+  enrichment: Betterview
+  hitl: true
+  checkpoint_stage: Risk Clearance
+  exception_path: true
+  exception_authority: Leadership
+  source_ref: Valuations, Page 7
+  impl_notes: Policy declarations must clearly state ACV locations
+  depends_on: None
+- id: DED-001
+  category: Deductibles
+  type: Threshold
+  statement: 'AOP deductible: $15,000 minimum for policies with premium >$50,000'
+  logic: IF premium > 50000 THEN AOP_deductible >= 15000
+  source_fields: premium, AOP_deductible
+  canonical_fields:
+  - Policy.total_premium
+  - Building.deductible
+  data_source: SOV
+  enrichment: None
+  hitl: false
+  checkpoint_stage: None
+  exception_path: false
+  exception_authority: N/A
+  source_ref: AOP Deductibles, Page 8
+  impl_notes: Per occurrence basis
+  depends_on: None
+- id: DED-002
+  category: Deductibles
+  type: Threshold
+  statement: 'AOP deductible: $10,000 minimum for policies with premium <$50,000'
+  logic: IF premium <= 50000 THEN AOP_deductible >= 10000
+  source_fields: premium, AOP_deductible
+  canonical_fields:
+  - Policy.total_premium
+  - Building.deductible
+  data_source: SOV
+  enrichment: None
+  hitl: false
+  checkpoint_stage: None
+  exception_path: false
+  exception_authority: N/A
+  source_ref: AOP Deductibles, Page 8
+  impl_notes: Per occurrence basis
+  depends_on: None
+- id: DED-003
+  category: Deductibles
+  type: Threshold
+  statement: 'Weather deductible: 3% minimum for High Convective Storm states, $25K floor'
+  logic: IF convective_rating = 'High' THEN weather_deductible >= MAX(TIV * 0.03, 25000)
+  source_fields: convective_rating, TIV, weather_deductible
+  canonical_fields:
+  - convective_rating
+  - Building.tiv
+  - Building.windstorm_or_hail_deductible_percentage
+  data_source: SOV, Appendix (map)
+  enrichment: HazardHub
+  hitl: false
+  checkpoint_stage: None
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Weather Deductibles, Page 8
+  impl_notes: High states per convective storm map
+  depends_on: None
+- id: DED-004
+  category: Deductibles
+  type: Threshold
+  statement: 'Weather deductible: 1% minimum for Moderate Convective Storm states, $25K floor'
+  logic: IF convective_rating = 'Moderate' THEN weather_deductible >= MAX(TIV * 0.01, 25000)
+  source_fields: convective_rating, TIV, weather_deductible
+  canonical_fields:
+  - convective_rating
+  - Building.tiv
+  - Building.windstorm_or_hail_deductible_percentage
+  data_source: SOV, Appendix (map)
+  enrichment: HazardHub
+  hitl: false
+  checkpoint_stage: None
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Weather Deductibles, Page 8
+  impl_notes: Moderate states per convective storm map
+  depends_on: None
+- id: DED-005
+  category: Deductibles
+  type: Threshold
+  statement: 'Weather deductible: $25K minimum for Low Convective Storm states, $10K for locations <$5M'
+  logic: IF convective_rating = 'Low' AND location_TIV >= 5000000 THEN weather_deductible >= 25000 ELSE IF location_TIV < 5000000 THEN weather_deductible
+    >= 10000
+  source_fields: convective_rating, location_TIV, weather_deductible
+  canonical_fields:
+  - convective_rating
+  - location_TIV
+  - Building.windstorm_or_hail_deductible_percentage
+  data_source: SOV, Appendix (map)
+  enrichment: HazardHub
+  hitl: false
+  checkpoint_stage: None
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Weather Deductibles, Page 8
+  impl_notes: Low states per convective storm map
+  depends_on: None
+- id: DED-006
+  category: Deductibles
+  type: Threshold
+  statement: 'Named Windstorm: 3% minimum for FL, TX, LA, MS, AL, GA coastal Tier 1/2'
+  logic: IF state IN ['FL', 'TX', 'LA', 'MS', 'AL', 'GA'] AND coastal_tier IN [1, 2] THEN windstorm_deductible >= TIV * 0.03
+  source_fields: state, coastal_tier, TIV, windstorm_deductible
+  canonical_fields:
+  - Location.state
+  - Location.county
+  - Building.tiv
+  - Building.windstorm_or_hail_deductible_percentage
+  data_source: SOV, Appendix A
+  enrichment: HazardHub
+  hitl: false
+  checkpoint_stage: None
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Named Windstorm Deductibles, Page 8
+  impl_notes: May be met with AOWH or Weather deductible
+  depends_on: None
+- id: DED-007
+  category: Deductibles
+  type: Threshold
+  statement: 'Named Windstorm: 2% minimum for SC, NC, VA coastal Tier 1/2'
+  logic: IF state IN ['SC', 'NC', 'VA'] AND coastal_tier IN [1, 2] THEN windstorm_deductible >= TIV * 0.02
+  source_fields: state, coastal_tier, TIV, windstorm_deductible
+  canonical_fields:
+  - Location.state
+  - Location.county
+  - Building.tiv
+  - Building.windstorm_or_hail_deductible_percentage
+  data_source: SOV, Appendix A
+  enrichment: HazardHub
+  hitl: false
+  checkpoint_stage: None
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Named Windstorm Deductibles, Page 8
+  impl_notes: May be met with AOWH or Weather deductible
+  depends_on: None
+- id: DED-008
+  category: Deductibles
+  type: Threshold
+  statement: 'Named Windstorm: 1% minimum for all other coastal Tier 1/2 counties'
+  logic: IF coastal_tier IN [1, 2] AND state NOT IN ['FL', 'TX', 'LA', 'MS', 'AL', 'GA', 'SC', 'NC', 'VA'] THEN windstorm_deductible >= TIV *
+    0.01
+  source_fields: state, coastal_tier, TIV, windstorm_deductible
+  canonical_fields:
+  - Location.state
+  - Location.county
+  - Building.tiv
+  - Building.windstorm_or_hail_deductible_percentage
+  data_source: SOV, Appendix A
+  enrichment: HazardHub
+  hitl: false
+  checkpoint_stage: None
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Named Windstorm Deductibles, Page 8
+  impl_notes: May be met with AOWH or Weather deductible
+  depends_on: None
+- id: AGG-001
+  category: Aggregation
+  type: Threshold
+  statement: 'High Convective Storm: $100M max TIV in 2.5 mile radius'
+  logic: IF convective_rating = 'High' THEN TIV_in_2.5mi <= 100000000
+  source_fields: convective_rating, location_coordinates, TIV
+  canonical_fields:
+  - convective_rating
+  - Location.latitude
+  - Location.longitude
+  - Building.tiv
+  data_source: SOV
+  enrichment: HazardHub
+  hitl: true
+  checkpoint_stage: Risk Clearance
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Aggregation - Convective Storm, Page 8
+  impl_notes: Radius aggregation check required
+  depends_on: None
+- id: AGG-002
+  category: Aggregation
+  type: Threshold
+  statement: 'High Convective Storm: $150M max TIV in 5 mile radius'
+  logic: IF convective_rating = 'High' THEN TIV_in_5mi <= 150000000
+  source_fields: convective_rating, location_coordinates, TIV
+  canonical_fields:
+  - convective_rating
+  - Location.latitude
+  - Location.longitude
+  - Building.tiv
+  data_source: SOV
+  enrichment: HazardHub
+  hitl: true
+  checkpoint_stage: Risk Clearance
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Aggregation - Convective Storm, Page 8
+  impl_notes: Radius aggregation check required
+  depends_on: None
+- id: AGG-003
+  category: Aggregation
+  type: Threshold
+  statement: 'Moderate Convective Storm: $150M max TIV in 2.5 mile radius'
+  logic: IF convective_rating = 'Moderate' THEN TIV_in_2.5mi <= 150000000
+  source_fields: convective_rating, location_coordinates, TIV
+  canonical_fields:
+  - convective_rating
+  - Location.latitude
+  - Location.longitude
+  - Building.tiv
+  data_source: SOV
+  enrichment: HazardHub
+  hitl: true
+  checkpoint_stage: Risk Clearance
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Aggregation - Convective Storm, Page 8
+  impl_notes: Radius aggregation check required
+  depends_on: None
+- id: AGG-004
+  category: Aggregation
+  type: Threshold
+  statement: 'Moderate Convective Storm: $200M max TIV in 5 mile radius'
+  logic: IF convective_rating = 'Moderate' THEN TIV_in_5mi <= 200000000
+  source_fields: convective_rating, location_coordinates, TIV
+  canonical_fields:
+  - convective_rating
+  - Location.latitude
+  - Location.longitude
+  - Building.tiv
+  data_source: SOV
+  enrichment: HazardHub
+  hitl: true
+  checkpoint_stage: Risk Clearance
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Aggregation - Convective Storm, Page 8
+  impl_notes: Radius aggregation check required
+  depends_on: None
+- id: AGG-005
+  category: Aggregation
+  type: Threshold
+  statement: 'Low Convective Storm: $200M max TIV in 2.5 mile radius'
+  logic: IF convective_rating = 'Low' THEN TIV_in_2.5mi <= 200000000
+  source_fields: convective_rating, location_coordinates, TIV
+  canonical_fields:
+  - convective_rating
+  - Location.latitude
+  - Location.longitude
+  - Building.tiv
+  data_source: SOV
+  enrichment: HazardHub
+  hitl: true
+  checkpoint_stage: Risk Clearance
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Aggregation - Convective Storm, Page 8
+  impl_notes: Radius aggregation check required
+  depends_on: None
+- id: AGG-006
+  category: Aggregation
+  type: Threshold
+  statement: 'Low Convective Storm: $250M max TIV in 5 mile radius'
+  logic: IF convective_rating = 'Low' THEN TIV_in_5mi <= 250000000
+  source_fields: convective_rating, location_coordinates, TIV
+  canonical_fields:
+  - convective_rating
+  - Location.latitude
+  - Location.longitude
+  - Building.tiv
+  data_source: SOV
+  enrichment: HazardHub
+  hitl: true
+  checkpoint_stage: Risk Clearance
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Aggregation - Convective Storm, Page 8
+  impl_notes: Radius aggregation check required
+  depends_on: None
+- id: AGG-007
+  category: Aggregation
+  type: Threshold
+  statement: 'Coastal Tier 1/2: $250M max TIV in 25 mile radius'
+  logic: IF coastal_tier IN [1, 2] THEN TIV_in_25mi <= 250000000
+  source_fields: coastal_tier, location_coordinates, TIV
+  canonical_fields:
+  - Location.county
+  - Location.latitude
+  - Location.longitude
+  - Building.tiv
+  data_source: SOV, Appendix A
+  enrichment: HazardHub
+  hitl: true
+  checkpoint_stage: Risk Clearance
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Coastal Aggregation Limits, Page 9
+  impl_notes: Radius aggregation check required
+  depends_on: None
+- id: DATA-001
+  category: Operational
+  type: Informational
+  statement: 'Required SOV fields: Address, occupancy, construction, year built, limits, stories'
+  logic: REQUIRED_FIELDS = ['address', 'city', 'state', 'zip', 'occupancy', 'construction', 'year_built', 'building_limit', 'contents_limit',
+    'BI_limit', 'stories']
+  source_fields: All SOV fields
+  canonical_fields:
+  - All SOV fields
+  data_source: SOV
+  enrichment: None
+  hitl: true
+  checkpoint_stage: Submission Ingestion
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Submission Requirements, Page 10
+  impl_notes: Validate completeness at intake
+  depends_on: None
+- id: DATA-002
+  category: Operational
+  type: Informational
+  statement: 'Required documents: ACORD 125, 5-year loss history or no known loss letter'
+  logic: required_docs = ['ACORD 125', 'Loss History' OR 'No Known Loss Letter']
+  source_fields: document_checklist
+  canonical_fields:
+  - document_checklist
+  data_source: Submission
+  enrichment: None
+  hitl: true
+  checkpoint_stage: Submission Ingestion
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Submission Requirements, Page 10
+  impl_notes: Letter must be signed by insured
+  depends_on: None
+- id: DATA-003
+  category: Operational
+  type: Informational
+  statement: 'Location definition: Buildings within 1,000 feet = single location'
+  logic: IF distance_between_buildings <= 1000 THEN same_location = TRUE
+  source_fields: location_coordinates
+  canonical_fields:
+  - Location.latitude
+  - Location.longitude
+  data_source: SOV
+  enrichment: None
+  hitl: false
+  checkpoint_stage: None
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Coverage Limits - Location Definitions, Page 5
+  impl_notes: Streets do not define separation
+  depends_on: None
+- id: DATA-004
+  category: Operational
+  type: Informational
+  statement: Blanket coverage available but underwriting info required for each building
+  logic: blanket_coverage_allowed = TRUE AND building_level_data_required = TRUE
+  source_fields: coverage_type, building_details
+  canonical_fields:
+  - Policy.class_of_business
+  - building_details
+  data_source: SOV
+  enrichment: None
+  hitl: true
+  checkpoint_stage: Submission Ingestion
+  exception_path: false
+  exception_authority: N/A
+  source_ref: General Requirements, Page 3
+  impl_notes: Individual building characteristics needed
+  depends_on: None
+- id: INSP-001
+  category: Operational
+  type: Conditional
+  statement: Risks built before 2010 require on-site inspection of roof, plumbing, HVAC, electrical
+  logic: IF year_built < 2010 THEN inspection_type = 'On-Site' AND inspection_components = ['roof', 'plumbing', 'HVAC', 'electrical']
+  source_fields: year_built
+  canonical_fields:
+  - Building.year_built
+  data_source: SOV
+  enrichment: None
+  hitl: true
+  checkpoint_stage: Risk Clearance
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Loss Control/Inspections, Page 11
+  impl_notes: Verify systems meet underwriting guidelines
+  depends_on: None
+- id: INSP-002
+  category: Operational
+  type: Conditional
+  statement: Risks built after 2010 require minimum virtual inspection unless underwriter determines otherwise
+  logic: IF year_built >= 2010 THEN inspection_type = 'Virtual' UNLESS underwriter_override = TRUE
+  source_fields: year_built, loss_history, location, value, construction
+  canonical_fields:
+  - Building.year_built
+  - loss_history
+  - location
+  - value
+  - Building.construction_type
+  data_source: SOV
+  enrichment: Betterview
+  hitl: true
+  checkpoint_stage: Risk Clearance
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Loss Control/Inspections, Page 11
+  impl_notes: Underwriter discretion based on risk factors
+  depends_on: None
+- id: INSP-003
+  category: Operational
+  type: Conditional
+  statement: Loss control conducted on all new policies
+  logic: ALL new_policies REQUIRE loss_control = TRUE
+  source_fields: policy_status
+  canonical_fields:
+  - policy_status
+  data_source: Internal
+  enrichment: None
+  hitl: true
+  checkpoint_stage: Binding
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Loss Control/Inspections, Page 11
+  impl_notes: Inspection fees charged to cover costs
+  depends_on: None
+- id: BLDG-004
+  category: Building
+  type: Conditional
+  statement: Buildings >25 years old without electrical inspection in past 5 years are ineligible
+  logic: IF year_built < (CURRENT_YEAR - 25) AND electrical_inspection_date < (CURRENT_DATE - 5 YEARS) THEN decline = TRUE
+  source_fields: year_built, electrical_inspection_date
+  canonical_fields:
+  - Building.year_built
+  - electrical_inspection_date
+  data_source: SOV, Inspection
+  enrichment: None
+  hitl: true
+  checkpoint_stage: Risk Clearance
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Ineligible Risk & Exposures, Page 4
+  impl_notes: Require electrical inspection documentation
+  depends_on: None
+- id: BLDG-005
+  category: Building
+  type: Conditional
+  statement: Smoke detectors required; hardwired required for buildings >3 stories
+  logic: IF stories > 3 THEN smoke_detectors = 'Hardwired' ELSE smoke_detectors = 'Required'
+  source_fields: stories, smoke_detector_type
+  canonical_fields:
+  - Building.number_of_stories
+  - smoke_detector_type
+  data_source: SOV, Inspection
+  enrichment: None
+  hitl: true
+  checkpoint_stage: Risk Clearance
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Ineligible Risk & Exposures, Page 4
+  impl_notes: Battery replacement annual for non-hardwired
+  depends_on: None
+- id: BLDG-006
+  category: Building
+  type: Conditional
+  statement: Fire extinguishers required per building code, regularly inspected with service tags
+  logic: fire_extinguishers = TRUE AND inspection_current = TRUE AND service_tags = TRUE
+  source_fields: fire_extinguisher_compliance
+  canonical_fields:
+  - fire_extinguisher_compliance
+  data_source: Inspection
+  enrichment: None
+  hitl: true
+  checkpoint_stage: Risk Clearance
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Ineligible Risk & Exposures, Page 4
+  impl_notes: Type and placement per code requirements
+  depends_on: None
+- id: BLDG-007
+  category: Building
+  type: Conditional
+  statement: Flammable liquids must be in fire resistant container in separate building
+  logic: IF flammable_liquids = TRUE THEN (container = 'Fire Resistant' AND storage = 'Separate Building' AND NFPA30_compliant = TRUE)
+  source_fields: flammable_liquids, storage_method, NFPA30_compliance
+  canonical_fields:
+  - flammable_liquids
+  - storage_method
+  - NFPA30_compliance
+  data_source: SOV, Inspection
+  enrichment: None
+  hitl: true
+  checkpoint_stage: Risk Clearance
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Ineligible Risk & Exposures, Page 4
+  impl_notes: NFPA 30 compliance required
+  depends_on: None
+- id: BLDG-008
+  category: Building
+  type: Conditional
+  statement: Wood stoves used as heat source are ineligible
+  logic: IF wood_stove_heat_source = TRUE THEN decline = TRUE
+  source_fields: heating_system
+  canonical_fields:
+  - heating_system
+  data_source: SOV, Inspection
+  enrichment: None
+  hitl: true
+  checkpoint_stage: Risk Clearance
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Ineligible Risk & Exposures, Page 4
+  impl_notes: Wood stove as supplemental heat may be acceptable
+  depends_on: None
+- id: OCC-001
+  category: Occupancy
+  type: Conditional
+  statement: Retail/Office/LRO with cooking/manufacturing require fire suppression
+  logic: IF occupancy IN ['Retail', 'Office', 'LRO'] AND (cooking = TRUE OR manufacturing = TRUE) THEN fire_suppression_required = TRUE
+  source_fields: occupancy, cooking, manufacturing, fire_suppression
+  canonical_fields:
+  - Building.occupancy
+  - cooking
+  - manufacturing
+  - fire_suppression
+  data_source: SOV
+  enrichment: None
+  hitl: true
+  checkpoint_stage: Risk Clearance
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Ineligible Risk & Exposures, Page 4
+  impl_notes: Cooking/manufacturing without suppression is ineligible
+  depends_on: None
+- id: OCC-002
+  category: Occupancy
+  type: Conditional
+  statement: Non-multifamily tenants with cooking operations require UL hood system and semi-annual cleaning
+  logic: IF tenant_cooking = TRUE AND occupancy != 'Multifamily' THEN (hood_system = 'UL Listed with Automatic Suppression' AND cleaning_frequency
+    = 'Semi-Annual' AND licensed_contractor = TRUE)
+  source_fields: tenant_cooking, occupancy, hood_system, cleaning_records
+  canonical_fields:
+  - tenant_cooking
+  - Building.occupancy
+  - hood_system
+  - cleaning_records
+  data_source: SOV, Inspection
+  enrichment: None
+  hitl: true
+  checkpoint_stage: Risk Clearance
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Ineligible Risk & Exposures, Page 4
+  impl_notes: Wet chemical automatic fire suppression required
+  depends_on: None
+- id: OCC-003
+  category: Occupancy
+  type: Conditional
+  statement: Retail/Office/LRO buildings require functional hydrants within 300 feet
+  logic: IF occupancy IN ['Retail', 'Office', 'LRO'] AND distance_to_hydrant > 300 THEN decline = TRUE
+  source_fields: occupancy, hydrant_distance
+  canonical_fields:
+  - Building.occupancy
+  - hydrant_distance
+  data_source: SOV, HazardHub
+  enrichment: HazardHub
+  hitl: true
+  checkpoint_stage: Risk Clearance
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Ineligible Risk & Exposures, Page 4
+  impl_notes: Functional hydrant verification required
+  depends_on: None
+- id: OCC-004
+  category: Occupancy
+  type: Conditional
+  statement: Restaurants with deep-fat fryers or open flame cooking are ineligible
+  logic: IF occupancy = 'Restaurant' AND (deep_fryers = TRUE OR open_flame = TRUE) THEN decline = TRUE
+  source_fields: occupancy, cooking_equipment
+  canonical_fields:
+  - Building.occupancy
+  - cooking_equipment
+  data_source: SOV
+  enrichment: None
+  hitl: true
+  checkpoint_stage: Risk Clearance
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Ineligible Risk & Exposures, Page 4
+  impl_notes: High fire risk cooking methods
+  depends_on: None
+- id: OCC-005
+  category: Occupancy
+  type: Conditional
+  statement: LRO risks with >50% unoccupied are ineligible
+  logic: IF occupancy = 'LRO' AND occupancy_rate < 0.50 THEN decline = TRUE
+  source_fields: occupancy, occupancy_rate
+  canonical_fields:
+  - Building.occupancy
+  - Building.occupancy_description
+  data_source: SOV, Inspection
+  enrichment: None
+  hitl: true
+  checkpoint_stage: Risk Clearance
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Ineligible Risk & Exposures, Page 5
+  impl_notes: Minimum 50% occupancy required for LRO
+  depends_on: None
+- id: OCC-006
+  category: Occupancy
+  type: Conditional
+  statement: Must obtain lease agreement to determine tenant insurance requirements
+  logic: lease_agreement_required = TRUE AND tenant_insurance_limits_verified = TRUE
+  source_fields: lease_agreement, tenant_insurance_requirements
+  canonical_fields:
+  - lease_agreement
+  - tenant_insurance_requirements
+  data_source: Submission Documents
+  enrichment: None
+  hitl: true
+  checkpoint_stage: Submission Ingestion
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Ineligible Risk & Exposures, Page 5
+  impl_notes: Cannot underwrite without lease terms
+  depends_on: None
+- id: BLDG-009
+  category: Building
+  type: Conditional
+  statement: Buildings must be on firm natural soil or use mitigation for local soil conditions
+  logic: firm_soil = TRUE OR soil_mitigation = TRUE
+  source_fields: soil_type, mitigation_methods
+  canonical_fields:
+  - soil_type
+  - mitigation_methods
+  data_source: SOV, Engineering Report
+  enrichment: None
+  hitl: true
+  checkpoint_stage: Risk Clearance
+  exception_path: false
+  exception_authority: N/A
+  source_ref: General Requirements, Page 3
+  impl_notes: Engineering report may be required
+  depends_on: None
+- id: OPER-002
+  category: Operational
+  type: Informational
+  statement: Lighthouse retains all binding authority, all submissions considered unbound
+  logic: binding_authority = 'Lighthouse' AND submission_status = 'Unbound'
+  source_fields: N/A
+  canonical_fields: []
+  data_source: N/A
+  enrichment: None
+  hitl: false
+  checkpoint_stage: None
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Binding Authority, Page 3
+  impl_notes: Quotes valid for 30 days
+  depends_on: None
+- id: OPER-003
+  category: Operational
+  type: Informational
+  statement: Quotes in effect for 30 days, subject to moratorium for imminent weather
+  logic: quote_validity = 30 AND moratorium_override = TRUE
+  source_fields: quote_date, weather_events
+  canonical_fields:
+  - quote_date
+  - weather_events
+  data_source: Internal
+  enrichment: None
+  hitl: false
+  checkpoint_stage: None
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Binding Authority, Page 3
+  impl_notes: Lighthouse can reduce quote validity period
+  depends_on: None
+- id: OPER-004
+  category: Operational
+  type: Informational
+  statement: Lighthouse does not split risks at a single location
+  logic: risk_splitting = FALSE
+  source_fields: N/A
+  canonical_fields: []
+  data_source: N/A
+  enrichment: None
+  hitl: false
+  checkpoint_stage: None
+  exception_path: false
+  exception_authority: N/A
+  source_ref: General Requirements, Page 3
+  impl_notes: Single carrier per location requirement
+  depends_on: None
+- id: OPER-005
+  category: Operational
+  type: Informational
+  statement: All risks subject to inspection for eligibility, valuation, roof, parking, condition
+  logic: inspection_required = TRUE
+  source_fields: N/A
+  canonical_fields: []
+  data_source: SOV
+  enrichment: Betterview
+  hitl: true
+  checkpoint_stage: Risk Clearance or Binding
+  exception_path: false
+  exception_authority: N/A
+  source_ref: General Requirements, Page 3
+  impl_notes: Inspection and policy fees may apply
+  depends_on: None
+- id: OPER-006
+  category: Operational
+  type: Conditional
+  statement: Hurricane moratorium prohibits binding and coverage increases during storm
+  logic: IF hurricane_approaching = TRUE THEN (new_binding = FALSE AND coverage_increase = FALSE AND backdate = FALSE)
+  source_fields: weather_alerts, moratorium_status
+  canonical_fields:
+  - weather_alerts
+  - moratorium_status
+  data_source: Internal, NOAA
+  enrichment: None
+  hitl: true
+  checkpoint_stage: Binding
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Moratoriums, Page 11
+  impl_notes: Moratorium defines geographic scope and timing
+  depends_on: None
+- id: OPER-007
+  category: Operational
+  type: Informational
+  statement: Full payment required at policy inception, 25% minimum earned (3 months)
+  logic: payment_timing = 'Inception' AND minimum_earned = 0.25
+  source_fields: payment_terms
+  canonical_fields:
+  - payment_terms
+  data_source: Internal
+  enrichment: None
+  hitl: false
+  checkpoint_stage: None
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Payment Options, Page 11
+  impl_notes: 25% minimum waived if Lighthouse cancels
+  depends_on: None
+- id: OPER-008
+  category: Operational
+  type: Informational
+  statement: Clearance requires submission with specified effective date and all required information
+  logic: clearance_requirements = ['effective_date', 'complete_SOV', 'ACORD_125', 'loss_history']
+  source_fields: submission_completeness
+  canonical_fields:
+  - submission_completeness
+  data_source: Submission
+  enrichment: None
+  hitl: true
+  checkpoint_stage: Submission Ingestion
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Clearance Procedure, Page 10
+  impl_notes: Time stamped Eastern time, incomplete submissions may be rejected
+  depends_on: None
+- id: RATE-001
+  category: Operational
+  type: Informational
+  statement: Technical pricing uses Verisk Touchstone for CAT perils and actuarial loss costs for non-CAT
+  logic: rating_method = 'Touchstone CAT + Actuarial Non-CAT'
+  source_fields: N/A
+  canonical_fields: []
+  data_source: Multiple
+  enrichment: Verisk Touchstone
+  hitl: false
+  checkpoint_stage: None
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Rating Method, Page 9
+  impl_notes: Includes loss cost multipliers for distribution, reinsurance, operations, profit
+  depends_on: None
+- id: RATE-002
+  category: Operational
+  type: Informational
+  statement: Market premium estimate compared to technical premium, use higher of two
+  logic: bound_premium = MAX(technical_premium, market_premium)
+  source_fields: technical_premium, market_premium
+  canonical_fields:
+  - technical_premium
+  - market_premium
+  data_source: Internal
+  enrichment: None
+  hitl: false
+  checkpoint_stage: None
+  exception_path: false
+  exception_authority: N/A
+  source_ref: Rating Method, Page 9
+  impl_notes: Technical premium is floor
+  depends_on: None
+- id: RATE-003
+  category: Operational
+  type: Informational
+  statement: Model and rate all properties at 100% insurance to value but allow lower insured amount
+  logic: modeling_basis = '100% ITV' AND policy_limit = 'User Selected'
+  source_fields: ITV, policy_limit
+  canonical_fields:
+  - ITV
+  - policy_limit
+  data_source: SOV, e2Value
+  enrichment: e2Value
+  hitl: false
+  checkpoint_stage: None
+  exception_path: false
+  exception_authority: N/A
+  source_ref: General Requirements, Page 3
+  impl_notes: Subject to Lighthouse minimums
+  depends_on: None

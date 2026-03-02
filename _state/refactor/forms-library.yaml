@@ -1,0 +1,1468 @@
+# LRMGA Forms Library — Tabular Format
+# Source: LRMGA Forms Library v1.xlsx (sent to Federato)
+# Schema refs: _state/refactor/schema/field-index.yaml
+# condition.canonical: mapped to Federato Entity.attribute from field-index
+# Agents: iterate forms[] array, match by disposition/condition, resolve fields via schema
+
+metadata:
+  title: LRMGA Forms Library - Federato Reference
+  source_file: LRMGA Forms Library v1.xlsx
+  version: 1.0.0
+  extracted: '2026-03-02'
+  total_forms: 78
+  schema_ref: _state/refactor/schema/field-index.yaml
+  dispositions:
+  - Conditional-Mandatory
+  - Default-Off/Addable
+  - Default-On/Removable
+  - Excluded
+  - Mandatory
+  - TBD
+  source_types:
+  - Bureau
+  - ISO
+  - Proprietary
+  - TBD
+reference:
+- section: DISPOSITION TYPES
+  term: Disposition
+  definition: Definition
+  example: Example
+- section: DISPOSITION TYPES
+  term: Mandatory
+  definition: Always attached to every transaction. No underwriter discretion.
+  example: OFAC Notice, Common Policy Conditions
+- section: DISPOSITION TYPES
+  term: Conditional-Mandatory
+  definition: Attached when a specific condition is met. No underwriter discretion once triggered.
+  example: Texas Changes (when SL Home State = TX)
+- section: DISPOSITION TYPES
+  term: Default-On/Removable
+  definition: Attached by default. Underwriter may remove with documented reason.
+  example: Cosmetic Roof Damage Endorsement
+- section: DISPOSITION TYPES
+  term: Default-Off/Addable
+  definition: Not attached by default. Underwriter may add at discretion.
+  example: Roof Exclusion, Protective Safeguards
+- section: DISPOSITION TYPES
+  term: Excluded
+  definition: Not available for current phase. Held for future implementation.
+  example: Following Form, Excess Coverage Form
+- section: DISPOSITION TYPES
+  term: TBD
+  definition: Disposition not yet determined by CUO. Requires decision before go-live.
+  example: ''
+- section: SOURCE TYPES
+  term: Source Type
+  definition: Definition
+  example: ''
+- section: SOURCE TYPES
+  term: ISO
+  definition: Insurance Services Office standard form. Referenced by ISO form number (e.g., CP 00 10 10 12).
+  example: ''
+- section: SOURCE TYPES
+  term: Bureau
+  definition: Industry bureau form (e.g., LMA, AAIS). Referenced by bureau form number.
+  example: ''
+- section: SOURCE TYPES
+  term: Proprietary
+  definition: LRMGA-drafted form. Uses LR numbering convention (e.g., LR 00 01 24).
+  example: ''
+- section: SOURCE TYPES
+  term: TBD
+  definition: Source not yet determined. Needs research to identify whether ISO form exists or proprietary draft needed.
+  example: ''
+- section: CONDITION OPERATORS
+  term: Operator
+  definition: Meaning
+  example: ''
+- section: CONDITION OPERATORS
+  term: equals
+  definition: Field value exactly matches the specified value
+  example: ''
+- section: CONDITION OPERATORS
+  term: not_equals
+  definition: Field value does not match the specified value
+  example: ''
+- section: CONDITION OPERATORS
+  term: in_list
+  definition: Field value matches any item in a comma-separated list
+  example: ''
+- section: CONDITION OPERATORS
+  term: greater_than
+  definition: Field value exceeds the specified threshold
+  example: ''
+- section: CONDITION OPERATORS
+  term: less_than
+  definition: Field value is below the specified threshold
+  example: ''
+- section: READINESS GATE DEFINITIONS
+  term: Gate
+  definition: Definition
+  example: How to Verify
+- section: READINESS GATE DEFINITIONS
+  term: Form Content Ready
+  definition: The actual form document (PDF/Word) exists, has been reviewed, and is approved for use.
+  example: PM confirms file exists and is current version
+- section: READINESS GATE DEFINITIONS
+  term: Rule Logic Defined
+  definition: CUO has specified the disposition, conditions, and transaction scope.
+  example: Disposition is not TBD; conditions are complete if Conditional-Mandatory
+- section: READINESS GATE DEFINITIONS
+  term: Federato Configured
+  definition: The attachment rule has been implemented in Federato and is functioning.
+  example: PM confirms with Federato engineering
+- section: READINESS GATE DEFINITIONS
+  term: Tested/Validated
+  definition: Form appears correctly in test policy output under all applicable conditions.
+  example: QA pass on quote, binder, policy, and endorsement workflows
+- section: LRMGA FORM NUMBERING CONVENTION
+  term: 'Format:'
+  definition: LR [category] [sequence] [edition] - e.g., LR 00 01 24
+  example: ''
+- section: LRMGA FORM NUMBERING CONVENTION
+  term: 'Prefix:'
+  definition: LR = Lighthouse Risk (proprietary forms). ISO/Bureau forms retain their original numbers.
+  example: ''
+- section: LRMGA FORM NUMBERING CONVENTION
+  term: 'Note:'
+  definition: LRMGA SOV prefix used for Schedule of Values forms.
+  example: ''
+forms:
+- id: F-001
+  form_number: LR DEC 01 26
+  iso_number: null
+  name: LRMGA Policy Declarations
+  source_type: Proprietary
+  variable_static: Variable
+  print_order: 1
+  disposition: Mandatory
+  transaction_scope: All
+  cuo_notes: Lighthouse Risk Dec Page (V0.7) pre-prod)
+  formsets:
+    all_perils: Mandatory
+    excess_following: Mandatory
+  readiness:
+    content: 'Yes'
+    logic: 'Yes'
+    federato_ready: 'Yes'
+    configured: 'No'
+    tested: 'No'
+    status: In Progress
+- id: F-002
+  form_number: LR QUOTE 01 26
+  iso_number: null
+  name: LRMGA Quote
+  source_type: Proprietary
+  variable_static: Variable
+  print_order: 1
+  disposition: Mandatory
+  transaction_scope: Quote
+  cuo_notes: TBD - to be created based on latest Dec
+  readiness:
+    content: In Progress
+    logic: 'Yes'
+    federato_ready: 'No'
+    configured: 'No'
+    tested: 'No'
+    status: In Progress
+- id: F-003
+  form_number: LRMGA SOV 01 26
+  iso_number: null
+  name: LRMGA SCHEDULE A/ STATEMENT OF VALUES
+  source_type: Proprietary
+  variable_static: null
+  print_order: null
+  disposition: Mandatory
+  transaction_scope: All
+  cuo_notes: Lighthouse Risk Schedule A - SOV (V0.7 pre-prod)
+  readiness:
+    content: In Progress
+    logic: 'Yes'
+    federato_ready: 'Yes'
+    configured: 'No'
+    tested: 'No'
+    status: In Progress
+- id: F-004
+  form_number: null
+  iso_number: null
+  name: Absolute Pollution Exclusion Endorsement (Special Form) - GenStar
+  source_type: TBD
+  variable_static: null
+  print_order: null
+  disposition: TBD
+  transaction_scope: null
+  cuo_notes: Is this competitor proprietary  form? Need source file. It looks like Aaron found in the Kaufman Asset Manager... policy on Page
+    65. This would need to be extracted and edited to remove reference to GenStar.
+  readiness:
+    content: 'No'
+    logic: 'No'
+    federato_ready: 'No'
+    configured: 'No'
+    tested: 'No'
+    status: TBD
+- id: F-005
+  form_number: null
+  iso_number: null
+  name: Additional Miscellaneous Forms (AmRisc)
+  source_type: TBD
+  variable_static: null
+  print_order: null
+  disposition: TBD
+  transaction_scope: null
+  cuo_notes: He is referring to a Participation page - use the Carrier Partiicpation Template
+  readiness:
+    content: 'No'
+    logic: 'No'
+    federato_ready: 'No'
+    configured: 'No'
+    tested: 'No'
+    status: TBD
+- id: F-006
+  form_number: LR 00 10 01 90
+  iso_number: null
+  name: Aluminum Wiring Exclusion Endorsement
+  source_type: Proprietary
+  variable_static: Static
+  print_order: null
+  disposition: Mandatory
+  transaction_scope: All
+  readiness:
+    content: 'Yes'
+    logic: 'Yes'
+    federato_ready: 'Yes'
+    configured: 'No'
+    tested: 'No'
+    status: In Progress
+- id: F-007
+  form_number: null
+  iso_number: null
+  name: Application Acknowledgement Form
+  source_type: TBD
+  variable_static: null
+  print_order: null
+  disposition: Mandatory
+  transaction_scope: All
+  cuo_notes: No ISO version assume will need to draft?
+  readiness:
+    content: 'No'
+    logic: 'Yes'
+    federato_ready: 'No'
+    configured: 'No'
+    tested: 'No'
+    status: Blocked
+- id: F-008
+  form_number: LR 00 15 88 98
+  iso_number: null
+  name: Asbestos Exclusion
+  source_type: Proprietary
+  variable_static: null
+  print_order: 14
+  disposition: Mandatory
+  transaction_scope: All
+  readiness:
+    content: 'Yes'
+    logic: 'Yes'
+    federato_ready: 'Yes'
+    configured: 'No'
+    tested: 'No'
+    status: In Progress
+- id: F-009
+  form_number: LR 00 10 10 12
+  iso_number: ISO (or custom)
+  name: Building and Personal Property Coverage Form
+  source_type: ISO
+  variable_static: null
+  print_order: 1
+  disposition: Conditional-Mandatory
+  transaction_scope: All
+  condition:
+    field: occupancy_type
+    canonical: Building.occupancy
+    operator: not_equals
+    value: Condominium
+  readiness:
+    content: 'Yes'
+    logic: 'Yes'
+    federato_ready: 'Yes'
+    configured: 'No'
+    tested: 'No'
+    status: In Progress
+- id: F-010
+  form_number: CP 00 30 10 12
+  iso_number: ISO
+  name: Business Income and Extra Expense Coverage Form
+  source_type: ISO
+  variable_static: null
+  print_order: 2.5
+  disposition: Mandatory
+  transaction_scope: All
+  readiness:
+    content: 'Yes'
+    logic: 'Yes'
+    federato_ready: 'Yes'
+    configured: 'No'
+    tested: 'No'
+    status: In Progress
+- id: F-011
+  form_number: null
+  iso_number: IL 00 03 09 08
+  name: Calculation of Premium
+  source_type: ISO
+  variable_static: null
+  print_order: null
+  disposition: TBD
+  transaction_scope: null
+  readiness:
+    content: In Progress
+    logic: 'No'
+    federato_ready: 'No'
+    configured: 'No'
+    tested: 'No'
+    status: Blocked
+- id: F-012
+  form_number: CP 02 99 11 85
+  iso_number: null
+  name: Cancellation Changes
+  source_type: ISO
+  variable_static: null
+  print_order: 4
+  disposition: Mandatory
+  transaction_scope: All
+  readiness:
+    content: 'Yes'
+    logic: 'Yes'
+    federato_ready: 'Yes'
+    configured: 'No'
+    tested: 'No'
+    status: In Progress
+- id: F-013
+  form_number: CP 10 10 10 12
+  iso_number: 'ISO:'
+  name: Cause of Loss - Basic Form
+  source_type: ISO
+  variable_static: null
+  print_order: 2.1
+  disposition: Conditional-Mandatory
+  transaction_scope: All
+  condition:
+    field: cause_of_loss
+    canonical: Building.cause_of_loss
+    operator: equals
+    value: Basic
+  formsets:
+    all_perils: Default-Off/Addable
+    excess_following: Default-Off/Addable
+  readiness:
+    content: 'Yes'
+    logic: 'Yes'
+    federato_ready: 'Yes'
+    configured: 'No'
+    tested: 'No'
+    status: In Progress
+- id: F-014
+  form_number: CP 10 30 09 17
+  iso_number: CP 10 30 09 17
+  name: Cause of Loss - Special Form
+  source_type: ISO
+  variable_static: null
+  print_order: 2
+  disposition: Conditional-Mandatory
+  transaction_scope: All
+  condition:
+    field: cause_of_loss
+    canonical: Building.cause_of_loss
+    operator: equals
+    value: Special
+  formsets:
+    all_perils: Default-On/Removable
+    excess_following: Default-On/Removable
+  readiness:
+    content: 'Yes'
+    logic: 'Yes'
+    federato_ready: 'Yes'
+    configured: 'No'
+    tested: 'No'
+    status: In Progress
+- id: F-015
+  form_number: LR 00 10 02 90
+  iso_number: null
+  name: Circuit Breaker and Fuse Exclusion
+  source_type: ISO
+  variable_static: null
+  print_order: null
+  disposition: Default-On/Removable
+  transaction_scope: All
+  readiness:
+    content: 'Yes'
+    logic: 'Yes'
+    federato_ready: 'Yes'
+    configured: 'No'
+    tested: 'No'
+    status: In Progress
+- id: F-016
+  form_number: CP 00 90 07 89
+  iso_number: null
+  name: Commercial Property Conditions
+  source_type: ISO
+  variable_static: null
+  print_order: null
+  disposition: Mandatory
+  transaction_scope: All
+  readiness:
+    content: 'Yes'
+    logic: 'Yes'
+    federato_ready: 'Yes'
+    configured: 'No'
+    tested: 'No'
+    status: In Progress
+- id: F-017
+  form_number: LR 00 01 24
+  iso_number: null
+  name: Common Policy Conditions
+  source_type: Proprietary
+  variable_static: null
+  print_order: 3
+  disposition: Mandatory
+  transaction_scope: All
+  readiness:
+    content: 'Yes'
+    logic: 'Yes'
+    federato_ready: 'Yes'
+    configured: 'No'
+    tested: 'No'
+    status: In Progress
+- id: F-018
+  form_number: LMA 5393 03 20
+  iso_number: LMA 5393 03 20
+  name: Communicable Disease Exclusion
+  source_type: Bureau
+  variable_static: null
+  print_order: 8
+  disposition: Mandatory
+  transaction_scope: All
+  readiness:
+    content: 'Yes'
+    logic: 'Yes'
+    federato_ready: 'Yes'
+    configured: 'No'
+    tested: 'No'
+    status: In Progress
+- id: F-019
+  form_number: null
+  iso_number: null
+  name: Complaint Notice - Texas
+  source_type: TBD
+  variable_static: null
+  print_order: null
+  disposition: Conditional-Mandatory
+  transaction_scope: All
+  condition:
+    field: surplus_lines_home_state
+    canonical: Location.state
+    operator: equals
+    value: TX
+  readiness:
+    content: 'No'
+    logic: 'Yes'
+    federato_ready: 'No'
+    configured: 'No'
+    tested: 'No'
+    status: Blocked
+- id: F-020
+  form_number: CP 00 17 10 12
+  iso_number: null
+  name: Condominium Association Coverage Form
+  source_type: ISO
+  variable_static: null
+  print_order: null
+  disposition: Conditional-Mandatory
+  transaction_scope: All
+  condition:
+    field: occupancy_type
+    canonical: Building.occupancy
+    operator: equals
+    value: Condominium
+  readiness:
+    content: 'Yes'
+    logic: 'Yes'
+    federato_ready: 'Yes'
+    configured: 'No'
+    tested: 'No'
+    status: In Progress
+- id: F-021
+  form_number: CP 00 18 10 12
+  iso_number: ISO
+  name: Condominium Association Coverage Form - Unit Owner Coverage Form
+  source_type: ISO
+  variable_static: null
+  print_order: null
+  disposition: Default-Off/Addable
+  transaction_scope: null
+  cuo_notes: Only added if there is any coverage needed for the individual unit owner. Typically this coverage is not provided
+  readiness:
+    content: 'Yes'
+    logic: 'No'
+    federato_ready: 'Yes'
+    configured: 'No'
+    tested: 'No'
+    status: Blocked
+- id: F-022
+  form_number: LR 00 11 99 01
+  iso_number: null
+  name: Cosmetic Roof Damage Endorsement
+  source_type: Proprietary
+  variable_static: null
+  print_order: null
+  disposition: Default-On/Removable
+  transaction_scope: All
+  readiness:
+    content: 'Yes'
+    logic: 'Yes'
+    federato_ready: 'Yes'
+    configured: 'No'
+    tested: 'No'
+    status: In Progress
+- id: F-023
+  form_number: CP 10 75 20
+  iso_number: CP 10 75 12 20
+  name: Cyber Incident Exclusion
+  source_type: ISO
+  variable_static: null
+  print_order: 10
+  disposition: Mandatory
+  transaction_scope: All
+  readiness:
+    content: 'Yes'
+    logic: 'Yes'
+    federato_ready: 'Yes'
+    configured: 'No'
+    tested: 'No'
+    status: In Progress
+- id: F-024
+  form_number: LR 00 18 55 99
+  iso_number: null
+  name: Deductible Endorsement Form 425
+  source_type: Proprietary
+  variable_static: null
+  print_order: 15
+  disposition: Mandatory
+  transaction_scope: All
+  readiness:
+    content: 'Yes'
+    logic: 'Yes'
+    federato_ready: 'Yes'
+    configured: 'No'
+    tested: 'No'
+    status: In Progress
+- id: F-025
+  form_number: null
+  iso_number: null
+  name: Earthquake Sprinkler Leakage Endorsement
+  source_type: TBD
+  variable_static: null
+  print_order: null
+  disposition: TBD
+  transaction_scope: null
+  cuo_notes: Is this the same as CP10390788 - SPRINKLER LEAKAGE - EARTHQUAKE EXTENSION?
+  readiness:
+    content: 'No'
+    logic: 'No'
+    federato_ready: 'No'
+    configured: 'No'
+    tested: 'No'
+    status: Blocked
+- id: F-026
+  form_number: null
+  iso_number: null
+  name: Excess Coverage Form
+  source_type: TBD
+  variable_static: null
+  print_order: null
+  disposition: Excluded
+  transaction_scope: null
+  cuo_notes: HOLD for later
+  readiness:
+    content: 'No'
+    logic: 'Yes'
+    federato_ready: 'No'
+    configured: 'No'
+    tested: 'No'
+    status: Hold
+- id: F-027
+  form_number: LR 09 35 07 02
+  iso_number: IL 09 35 07 02
+  name: Exclusion for Certain Computer Related Losses
+  source_type: ISO
+  variable_static: null
+  print_order: null
+  disposition: Mandatory
+  transaction_scope: All
+  readiness:
+    content: 'Yes'
+    logic: 'Yes'
+    federato_ready: 'Yes'
+    configured: 'No'
+    tested: 'No'
+    status: In Progress
+- id: F-028
+  form_number: TBD
+  iso_number: null
+  name: Exclusion of Certified Acts of Terrorism
+  source_type: TBD
+  variable_static: null
+  print_order: 15.5
+  disposition: Conditional-Mandatory
+  transaction_scope: All
+  condition:
+    field: terrorism_coverage
+    canonical: Policy.policy_type
+    operator: equals
+    value: 'No'
+  readiness:
+    content: 'No'
+    logic: 'Yes'
+    federato_ready: 'No'
+    configured: 'No'
+    tested: 'No'
+    status: Blocked
+- id: F-029
+  form_number: LR 00 31 01 07
+  iso_number: IL 00 31 01 06 (may not include cap language)
+  name: Exclusion of Terrorism Involving Nuclear, Biological Or Chemical Terrorism
+  source_type: ISO
+  variable_static: null
+  print_order: 11
+  disposition: Mandatory
+  transaction_scope: All
+  readiness:
+    content: 'Yes'
+    logic: 'Yes'
+    federato_ready: 'Yes'
+    configured: 'No'
+    tested: 'No'
+    status: In Progress
+- id: F-030
+  form_number: CP 01 40 07 06
+  iso_number: CP 01 40 07 06
+  name: Exclusion of Loss Due to Virus or Bacteria
+  source_type: ISO
+  variable_static: null
+  print_order: 12
+  disposition: Mandatory
+  transaction_scope: All
+  readiness:
+    content: 'Yes'
+    logic: 'Yes'
+    federato_ready: 'Yes'
+    configured: 'No'
+    tested: 'No'
+    status: In Progress
+- id: F-031
+  form_number: LR 71 70 55 61
+  iso_number: null
+  name: Exterior Insulation and Finishing Systems Exclusion of Wind, Hail and Water Damage
+  source_type: Proprietary
+  variable_static: null
+  print_order: 13
+  disposition: Default-On/Removable
+  transaction_scope: All
+  readiness:
+    content: 'Yes'
+    logic: 'Yes'
+    federato_ready: 'Yes'
+    configured: 'No'
+    tested: 'No'
+    status: In Progress
+- id: F-032
+  form_number: null
+  iso_number: IL N 102 09 19 (Texas version)
+  name: Flood Insurance Disclosure Notice
+  source_type: ISO
+  variable_static: null
+  print_order: null
+  disposition: TBD
+  transaction_scope: null
+  readiness:
+    content: In Progress
+    logic: 'No'
+    federato_ready: 'No'
+    configured: 'No'
+    tested: 'No'
+    status: Blocked
+- id: F-033
+  form_number: null
+  iso_number: null
+  name: Following Form
+  source_type: TBD
+  variable_static: null
+  print_order: null
+  disposition: Excluded
+  transaction_scope: null
+  cuo_notes: HOLD for later
+  readiness:
+    content: 'No'
+    logic: 'Yes'
+    federato_ready: 'No'
+    configured: 'No'
+    tested: 'No'
+    status: Hold
+- id: F-034
+  form_number: IL N 001 09 03
+  iso_number: null
+  name: Fraud Statement
+  source_type: ISO
+  variable_static: null
+  print_order: 16
+  disposition: Mandatory
+  transaction_scope: All
+  readiness:
+    content: 'Yes'
+    logic: 'Yes'
+    federato_ready: 'Yes'
+    configured: 'No'
+    tested: 'No'
+    status: In Progress
+- id: F-035
+  form_number: null
+  iso_number: null
+  name: Functional Building Damage
+  source_type: TBD
+  variable_static: null
+  print_order: null
+  disposition: TBD
+  transaction_scope: null
+  cuo_notes: This is often called a functional replacement costs
+  readiness:
+    content: 'No'
+    logic: 'No'
+    federato_ready: 'No'
+    configured: 'No'
+    tested: 'No'
+    status: Blocked
+- id: F-036
+  form_number: LR 00 10 20 50
+  iso_number: null
+  name: Fungus Clean Up and Removal Limitation Endorsement
+  source_type: Proprietary
+  variable_static: null
+  print_order: 18
+  disposition: Default-Off/Addable
+  transaction_scope: All
+  cuo_notes: We need to further assess how this form interacts with the ISO  fungus CP 01 71 09 03 - Limitations on Fungus, Wet Rot, Dry Rot,
+    and Bacteria.  I have moved to Optional-Addable for now
+  readiness:
+    content: 'Yes'
+    logic: 'Yes'
+    federato_ready: 'Yes'
+    configured: 'No'
+    tested: 'No'
+    status: In Progress
+- id: F-037
+  form_number: LR 00 10 40 50
+  iso_number: null
+  name: Hail and/or Windstorm 180 - Day Reporting Endorsement
+  source_type: Proprietary
+  variable_static: null
+  print_order: 19
+  disposition: Default-On/Removable
+  transaction_scope: All
+  readiness:
+    content: 'Yes'
+    logic: 'Yes'
+    federato_ready: 'Yes'
+    configured: 'No'
+    tested: 'No'
+    status: In Progress
+- id: F-038
+  form_number: null
+  iso_number: null
+  name: Hurricane Minimum Earned Premium Endorsement
+  source_type: TBD
+  variable_static: null
+  print_order: null
+  disposition: Default-Off/Addable
+  transaction_scope: All
+  readiness:
+    content: 'No'
+    logic: 'Yes'
+    federato_ready: 'No'
+    configured: 'No'
+    tested: 'No'
+    status: Blocked
+- id: F-039
+  form_number: TBD
+  iso_number: null
+  name: Instruction for How to Report and File Claim
+  source_type: TBD
+  variable_static: null
+  print_order: 20
+  disposition: Mandatory
+  transaction_scope: All
+  readiness:
+    content: 'No'
+    logic: 'Yes'
+    federato_ready: 'No'
+    configured: 'No'
+    tested: 'No'
+    status: Blocked
+- id: F-040
+  form_number: null
+  iso_number: null
+  name: Joint or Disputed Loss Agreement
+  source_type: TBD
+  variable_static: null
+  print_order: null
+  disposition: TBD
+  transaction_scope: null
+  cuo_notes: 'Found CP 12 72 12 98 TEXAS CHANGES – JOINT OR DISPUTED LOSS
+
+    AGREEMENT'
+  readiness:
+    content: 'No'
+    logic: 'No'
+    federato_ready: 'No'
+    configured: 'No'
+    tested: 'No'
+    status: Blocked
+- id: F-041
+  form_number: null
+  iso_number: null
+  name: Lighthouse Risk Condo Property Endorsement
+  source_type: TBD
+  variable_static: null
+  print_order: null
+  disposition: Conditional-Mandatory
+  transaction_scope: All
+  condition:
+    field: occupancy_type
+    canonical: Building.occupancy
+    operator: equals
+    value: Condominium
+  cuo_notes: "found CONDOMINIUM COMMERCIAL UNIT-OWNERS \nCOVERAGE FORM but hsd no form #"
+  readiness:
+    content: In Progress
+    logic: 'Yes'
+    federato_ready: 'No'
+    configured: 'No'
+    tested: 'No'
+    status: In Progress
+- id: F-042
+  form_number: LR 00 55 12 33A
+  iso_number: null
+  name: Lighthouse Risk Property Endorsement
+  source_type: Proprietary
+  variable_static: null
+  print_order: null
+  disposition: Default-On/Removable
+  transaction_scope: All
+  readiness:
+    content: 'Yes'
+    logic: 'Yes'
+    federato_ready: 'Yes'
+    configured: 'No'
+    tested: 'No'
+    status: In Progress
+- id: F-043
+  form_number: LR 01 40 07 06
+  iso_number: null
+  name: LIMITATIONS ON COVERAGE FOR GENERAL CONTRACTOR OVERHEAD AND PROFIT
+  source_type: Proprietary
+  variable_static: null
+  print_order: null
+  disposition: Default-On/Removable
+  transaction_scope: All
+  readiness:
+    content: 'Yes'
+    logic: 'Yes'
+    federato_ready: 'Yes'
+    configured: 'No'
+    tested: 'No'
+    status: In Progress
+- id: F-044
+  form_number: CP 01 71 09 03
+  iso_number: CP 01 71 09 02
+  name: Limitations on Fungus, Wet Rot, Dry Rot, and Bacteria
+  source_type: ISO
+  variable_static: null
+  print_order: 7
+  disposition: Mandatory
+  transaction_scope: All
+  readiness:
+    content: 'Yes'
+    logic: 'Yes'
+    federato_ready: 'Yes'
+    configured: 'No'
+    tested: 'No'
+    status: In Progress
+- id: F-045
+  form_number: LR 00 10 40 50
+  iso_number: null
+  name: Loss Payable Provision
+  source_type: Proprietary
+  variable_static: null
+  print_order: null
+  disposition: Default-Off/Addable
+  transaction_scope: null
+  readiness:
+    content: 'Yes'
+    logic: 'No'
+    federato_ready: 'Yes'
+    configured: 'No'
+    tested: 'No'
+    status: Blocked
+- id: F-046
+  form_number: LR 03 01 24 04
+  iso_number: null
+  name: Managed Repair
+  source_type: Proprietary
+  variable_static: null
+  print_order: 5
+  disposition: Default-On/Removable
+  transaction_scope: All
+  readiness:
+    content: 'Yes'
+    logic: 'Yes'
+    federato_ready: 'Yes'
+    configured: 'No'
+    tested: 'No'
+    status: In Progress
+- id: F-047
+  form_number: TBD
+  iso_number: null
+  name: Minimum Earned Premium (Include Total Loss and/or Partial Loss Language in this)
+  source_type: TBD
+  variable_static: null
+  print_order: 16
+  disposition: Mandatory
+  transaction_scope: All
+  readiness:
+    content: 'No'
+    logic: 'Yes'
+    federato_ready: 'No'
+    configured: 'No'
+    tested: 'No'
+    status: Blocked
+- id: F-048
+  form_number: LR 00 10 20 30
+  iso_number: null
+  name: Multiple Deductible Form
+  source_type: Proprietary
+  variable_static: null
+  print_order: 15.5
+  disposition: Mandatory
+  transaction_scope: All
+  readiness:
+    content: 'Yes'
+    logic: 'Yes'
+    federato_ready: 'Yes'
+    configured: 'No'
+    tested: 'No'
+    status: In Progress
+- id: F-049
+  form_number: LR 03 18 45 09
+  iso_number: null
+  name: Occurrence Limit of Liability Endorsement
+  source_type: Proprietary
+  variable_static: null
+  print_order: null
+  disposition: Default-On/Removable
+  transaction_scope: All
+  cuo_notes: Need to replace with updated form that includes Ord Law and Business Income
+  readiness:
+    content: 'Yes'
+    logic: 'Yes'
+    federato_ready: 'Yes'
+    configured: 'No'
+    tested: 'No'
+    status: In Progress
+- id: F-050
+  form_number: IL P 001 01 04
+  iso_number: IL P 001 01 04
+  name: OFAC Notice
+  source_type: ISO
+  variable_static: null
+  print_order: 17
+  disposition: Mandatory
+  transaction_scope: All
+  readiness:
+    content: 'Yes'
+    logic: 'Yes'
+    federato_ready: 'Yes'
+    configured: 'No'
+    tested: 'No'
+    status: In Progress
+- id: F-051
+  form_number: CP 04 05 09 17
+  iso_number: CP 04 05 09 17
+  name: Ordinance or Law Coverage
+  source_type: ISO
+  variable_static: null
+  print_order: ' '
+  disposition: TBD
+  transaction_scope: null
+  readiness:
+    content: 'Yes'
+    logic: 'No'
+    federato_ready: 'Yes'
+    configured: 'No'
+    tested: 'No'
+    status: Blocked
+- id: F-052
+  form_number: TBD
+  iso_number: ISO
+  name: Ordinance or Law Coverage - Increased Period of Restoration
+  source_type: ISO
+  variable_static: null
+  print_order: 4
+  disposition: Mandatory
+  transaction_scope: All
+  readiness:
+    content: 'No'
+    logic: 'Yes'
+    federato_ready: 'No'
+    configured: 'No'
+    tested: 'No'
+    status: Blocked
+- id: F-053
+  form_number: null
+  iso_number: null
+  name: Participation Clause - Westchester
+  source_type: TBD
+  variable_static: null
+  print_order: null
+  disposition: TBD
+  transaction_scope: null
+  cuo_notes: 'Tom: We don''t need this form because we effectively have this in a section of our Dec Page when there is a participation % on the
+    policy'
+  readiness:
+    content: 'No'
+    logic: 'No'
+    federato_ready: 'No'
+    configured: 'No'
+    tested: 'No'
+    status: Blocked
+- id: F-054
+  form_number: TBD
+  iso_number: IL N 178 03 13 (Texas version)
+  name: 'TEXAS PERIOD TO FILE A CLAIM OR BRING
+
+    LEGAL ACTION AGAINST US NOTICE –
+
+    WINDSTORM OR HAIL – CATASTROPHE AREA'
+  source_type: ISO
+  variable_static: null
+  print_order: 17
+  disposition: Default-On/Removable
+  transaction_scope: All
+  readiness:
+    content: 'No'
+    logic: 'Yes'
+    federato_ready: 'No'
+    configured: 'No'
+    tested: 'No'
+    status: Blocked
+- id: F-055
+  form_number: null
+  iso_number: null
+  name: Permission for Excess Insurance
+  source_type: TBD
+  variable_static: null
+  print_order: null
+  disposition: Mandatory
+  transaction_scope: All
+  readiness:
+    content: 'No'
+    logic: 'Yes'
+    federato_ready: 'No'
+    configured: 'No'
+    tested: 'No'
+    status: Blocked
+- id: F-056
+  form_number: LR 77 55 66 43
+  iso_number: null
+  name: Pre-Existing Damage Exclusion Endorsement
+  source_type: Proprietary
+  variable_static: null
+  print_order: null
+  disposition: Mandatory
+  transaction_scope: All
+  readiness:
+    content: In Progress
+    logic: 'Yes'
+    federato_ready: 'No'
+    configured: 'No'
+    tested: 'No'
+    status: In Progress
+- id: F-057
+  form_number: null
+  iso_number: null
+  name: Privacy Notice
+  source_type: TBD
+  variable_static: null
+  print_order: null
+  disposition: Mandatory
+  transaction_scope: All
+  readiness:
+    content: 'No'
+    logic: 'Yes'
+    federato_ready: 'No'
+    configured: 'No'
+    tested: 'No'
+    status: Blocked
+- id: F-058
+  form_number: TBD
+  iso_number: null
+  name: Property Coverage Enhancement Endorsement
+  source_type: TBD
+  variable_static: null
+  print_order: 6
+  disposition: TBD
+  transaction_scope: null
+  readiness:
+    content: 'No'
+    logic: 'No'
+    federato_ready: 'No'
+    configured: 'No'
+    tested: 'No'
+    status: Blocked
+- id: F-060
+  form_number: null
+  iso_number: null
+  name: Protective Safeguards
+  source_type: TBD
+  variable_static: null
+  print_order: null
+  disposition: Default-Off/Addable
+  transaction_scope: All
+  readiness:
+    content: 'No'
+    logic: 'Yes'
+    federato_ready: 'No'
+    configured: 'No'
+    tested: 'No'
+    status: Blocked
+- id: F-061
+  form_number: null
+  iso_number: null
+  name: Removal of Apprasial
+  source_type: TBD
+  variable_static: null
+  print_order: null
+  disposition: Default-On/Removable
+  transaction_scope: All
+  readiness:
+    content: 'No'
+    logic: 'Yes'
+    federato_ready: 'No'
+    configured: 'No'
+    tested: 'No'
+    status: Blocked
+- id: F-062
+  form_number: null
+  iso_number: null
+  name: Replacement Cost Coverage - Aluminum Wiring Exception
+  source_type: TBD
+  variable_static: null
+  print_order: null
+  disposition: TBD
+  transaction_scope: null
+  cuo_notes: found LR 00 10 01 90  Aluminum Wiring Exclusion
+  readiness:
+    content: 'No'
+    logic: 'No'
+    federato_ready: 'No'
+    configured: 'No'
+    tested: 'No'
+    status: Blocked
+- id: F-063
+  form_number: null
+  iso_number: null
+  name: Roof Exclusion
+  source_type: TBD
+  variable_static: null
+  print_order: null
+  disposition: Default-Off/Addable
+  transaction_scope: All
+  readiness:
+    content: 'No'
+    logic: 'Yes'
+    federato_ready: 'No'
+    configured: 'No'
+    tested: 'No'
+    status: Blocked
+- id: F-064
+  form_number: null
+  iso_number: null
+  name: Roof Exclusion - Roofs Older Than 15 Years
+  source_type: TBD
+  variable_static: null
+  print_order: null
+  disposition: Default-Off/Addable
+  transaction_scope: All
+  readiness:
+    content: 'No'
+    logic: 'Yes'
+    federato_ready: 'No'
+    configured: 'No'
+    tested: 'No'
+    status: Blocked
+- id: F-065
+  form_number: null
+  iso_number: null
+  name: Roof Limitations Endorsement Actual Cash Value
+  source_type: TBD
+  variable_static: null
+  print_order: null
+  disposition: Default-Off/Addable
+  transaction_scope: All
+  readiness:
+    content: 'No'
+    logic: 'Yes'
+    federato_ready: 'No'
+    configured: 'No'
+    tested: 'No'
+    status: Blocked
+- id: F-066
+  form_number: TBD
+  iso_number: null
+  name: Service of Suit Clause Endorsement
+  source_type: TBD
+  variable_static: null
+  print_order: 16
+  disposition: TBD
+  transaction_scope: null
+  readiness:
+    content: 'No'
+    logic: 'No'
+    federato_ready: 'No'
+    configured: 'No'
+    tested: 'No'
+    status: Blocked
+- id: F-067
+  form_number: LR 10 00 22 95
+  iso_number: null
+  name: Sewer Drain and Sump Backup Coverage
+  source_type: Proprietary
+  variable_static: null
+  print_order: 14.5
+  disposition: Mandatory
+  transaction_scope: All
+  readiness:
+    content: 'Yes'
+    logic: 'Yes'
+    federato_ready: 'Yes'
+    configured: 'No'
+    tested: 'No'
+    status: In Progress
+- id: F-068
+  form_number: null
+  iso_number: null
+  name: Sprinkler Leakage Exclusion
+  source_type: TBD
+  variable_static: null
+  print_order: null
+  disposition: Default-Off/Addable
+  transaction_scope: All
+  readiness:
+    content: 'No'
+    logic: 'Yes'
+    federato_ready: 'No'
+    configured: 'No'
+    tested: 'No'
+    status: Blocked
+- id: F-069
+  form_number: null
+  iso_number: null
+  name: Terrorism Coverage Endorsement (if more than Certified Acts)
+  source_type: TBD
+  variable_static: null
+  print_order: null
+  disposition: Conditional-Mandatory
+  transaction_scope: All
+  condition:
+    field: terrorism_coverage
+    canonical: Policy.policy_type
+    operator: equals
+    value: 'Yes'
+  readiness:
+    content: 'No'
+    logic: 'Yes'
+    federato_ready: 'No'
+    configured: 'No'
+    tested: 'No'
+    status: Blocked
+- id: F-070
+  form_number: null
+  iso_number: CP 12 72 12 98
+  name: Texas - Joint Or Dispute Loss Agreement
+  source_type: ISO
+  variable_static: null
+  print_order: null
+  disposition: Excluded
+  transaction_scope: All
+  cuo_notes: This form only applies if Equipment breakdown is provided by another carrier.
+  readiness:
+    content: 'Yes'
+    logic: 'Yes'
+    federato_ready: 'Yes'
+    configured: 'No'
+    tested: 'No'
+    status: In Progress
+- id: F-071
+  form_number: null
+  iso_number: CP 01 42 03 12
+  name: Texas Changes
+  source_type: ISO
+  variable_static: null
+  print_order: null
+  disposition: Conditional-Mandatory
+  transaction_scope: All
+  condition:
+    field: surplus_lines_home_state
+    canonical: Location.state
+    operator: equals
+    value: TX
+  cuo_notes: Need to remove appraisal parts
+  readiness:
+    content: 'Yes'
+    logic: 'Yes'
+    federato_ready: 'Yes'
+    configured: 'No'
+    tested: 'No'
+    status: In Progress
+- id: F-072
+  form_number: LR 10 07 08 11
+  iso_number: null
+  name: Total Loss Endorsement
+  source_type: Proprietary
+  variable_static: null
+  print_order: null
+  disposition: Mandatory
+  transaction_scope: All
+  readiness:
+    content: 'Yes'
+    logic: 'Yes'
+    federato_ready: 'Yes'
+    configured: 'No'
+    tested: 'No'
+    status: In Progress
+- id: F-073
+  form_number: LR 00 01 04 24
+  iso_number: null
+  name: Total Terrorism Exclusion
+  source_type: Proprietary
+  variable_static: null
+  print_order: 15
+  disposition: Conditional-Mandatory
+  transaction_scope: All
+  condition:
+    field: terrorism_coverage
+    canonical: Policy.policy_type
+    operator: equals
+    value: 'No'
+  readiness:
+    content: 'Yes'
+    logic: 'Yes'
+    federato_ready: 'Yes'
+    configured: 'No'
+    tested: 'No'
+    status: In Progress
+- id: F-074
+  form_number: null
+  iso_number: null
+  name: Water Exclusion Endorsement
+  source_type: TBD
+  variable_static: null
+  print_order: null
+  disposition: Default-Off/Addable
+  transaction_scope: All
+  readiness:
+    content: 'No'
+    logic: 'Yes'
+    federato_ready: 'No'
+    configured: 'No'
+    tested: 'No'
+    status: Blocked
+- id: F-075
+  form_number: null
+  iso_number: null
+  name: Windstorm or Hail Exclusion
+  source_type: TBD
+  variable_static: null
+  print_order: null
+  disposition: Excluded
+  transaction_scope: null
+  cuo_notes: HOLD for later
+  readiness:
+    content: 'No'
+    logic: 'Yes'
+    federato_ready: 'No'
+    configured: 'No'
+    tested: 'No'
+    status: Hold
+- id: F-076
+  form_number: null
+  iso_number: null
+  name: Windstorm Protective Devices
+  source_type: TBD
+  variable_static: null
+  print_order: null
+  disposition: Default-Off/Addable
+  transaction_scope: All
+  readiness:
+    content: 'No'
+    logic: 'Yes'
+    federato_ready: 'No'
+    configured: 'No'
+    tested: 'No'
+    status: Blocked
+- id: F-077
+  form_number: LR 10 96 34 75
+  iso_number: null
+  name: Wiring Exclusion Endorsement
+  source_type: Proprietary
+  variable_static: null
+  print_order: 14.6
+  disposition: Default-Off/Addable
+  transaction_scope: All
+  readiness:
+    content: In Progress
+    logic: 'Yes'
+    federato_ready: 'No'
+    configured: 'No'
+    tested: 'No'
+    status: In Progress
+- id: F-078
+  form_number: null
+  iso_number: null
+  name: Equipment Breakdown Endorsement
+  source_type: TBD
+  variable_static: null
+  print_order: null
+  disposition: Default-Off/Addable
+  transaction_scope: All
+  readiness:
+    content: 'No'
+    logic: 'Yes'
+    federato_ready: 'No'
+    configured: 'No'
+    tested: 'No'
+    status: Blocked
+- id: F-079
+  form_number: null
+  iso_number: null
+  name: General Endorsement Form
+  source_type: TBD
+  variable_static: null
+  print_order: null
+  disposition: TBD
+  transaction_scope: null
+  cuo_notes: This is standard form
+  readiness:
+    content: 'No'
+    logic: 'No'
+    federato_ready: 'No'
+    configured: 'No'
+    tested: 'No'
+    status: Blocked
